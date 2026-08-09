@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getCurrentUserProfile, roleHomePath } from "@/lib/auth/session";
@@ -5,6 +6,7 @@ import { signOutAction } from "@/lib/auth/actions";
 import { Logo } from "@/components/shared/logo";
 import { Container } from "@/components/shared/container";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 /**
  * Everything under /investor requires a signed-in user whose profile role
@@ -25,13 +27,25 @@ export default async function InvestorLayout({
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="border-b border-border bg-white">
+      <header className="border-border border-b bg-white">
         <Container className="flex h-16 items-center justify-between">
           <Logo href="/investor" />
           <div className="flex items-center gap-4">
-            <span className="text-small text-gray-500">
+            <Link
+              href="/investor/profile"
+              className="text-small flex items-center gap-2 text-gray-500 hover:text-gray-900"
+            >
+              <Avatar className="size-7">
+                <AvatarImage
+                  src={current.profile.avatar_url ?? undefined}
+                  alt=""
+                />
+                <AvatarFallback className="text-caption">
+                  {current.profile.full_name.slice(0, 1).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
               {current.profile.full_name}
-            </span>
+            </Link>
             <form action={signOutAction}>
               <Button type="submit" variant="secondary" size="sm">
                 Sign out
