@@ -71,8 +71,8 @@
      mobile and desktop values the doc specifies, rather than jumping at
      a single breakpoint.
      -------------------------------------------------------------------- */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
-    sans-serif;
+  --font-sans:
+    var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
 
   --text-display: clamp(2.5rem, 1.9rem + 2.5vw, 4rem); /* 48–64px */
   --text-display--line-height: 1.1;
@@ -200,7 +200,7 @@
   }
 
   body {
-    @apply bg-background text-gray-700 text-body antialiased;
+    @apply bg-background text-body text-gray-700 antialiased;
   }
 
   h1,
@@ -216,5 +216,32 @@
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
+  }
+}
+
+/* ==========================================================================
+   Founder workspace — decorative motion
+   ==========================================================================
+   Used only by the small abstract SVG in the lower-right of My Startups
+   (components/founder/my-startups-decoration.tsx). Deliberately plain CSS
+   rather than Tailwind's `--animate-*` theme mechanism, and deliberately
+   gated behind `prefers-reduced-motion: no-preference` rather than
+   Tailwind's `motion-safe:` variant, so it degrades to a fully static SVG
+   with no animation-related class at all when the user has asked for
+   reduced motion — not just a paused/instant one.
+   ========================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  .animate-float-slow {
+    animation: float-slow 6s ease-in-out infinite;
+  }
+}
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
   }
 }

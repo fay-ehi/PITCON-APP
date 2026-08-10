@@ -12,6 +12,7 @@
  * Migrations reflected here:
  *   - 20260808120000_auth_profile_foundation.sql       (Sprint 1)
  *   - 20260808130000_founder_investor_profile_details.sql (Sprint 2)
+ *   - 20260809080000_startups.sql                       (Sprint 3)
  */
 export type Json =
   | string
@@ -258,6 +259,118 @@ export type Database = {
           },
         ];
       };
+      startups: {
+        Row: {
+          id: string;
+          founder_id: string;
+          status: Database["public"]["Enums"]["startup_status"];
+          name: string | null;
+          logo_url: string | null;
+          cover_image_url: string | null;
+          tagline: string | null;
+          description: string | null;
+          industry_id: string | null;
+          stage_id: string | null;
+          country: string | null;
+          city: string | null;
+          website_url: string | null;
+          funding_amount_sought: number | null;
+          annual_revenue: number | null;
+          monthly_revenue: number | null;
+          customer_count: number | null;
+          employee_count: number | null;
+          pitch_deck_path: string | null;
+          pitch_deck_original_name: string | null;
+          elevator_pitch: string | null;
+          linkedin_url: string | null;
+          twitter_url: string | null;
+          instagram_url: string | null;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          founder_id: string;
+          status?: Database["public"]["Enums"]["startup_status"];
+          name?: string | null;
+          logo_url?: string | null;
+          cover_image_url?: string | null;
+          tagline?: string | null;
+          description?: string | null;
+          industry_id?: string | null;
+          stage_id?: string | null;
+          country?: string | null;
+          city?: string | null;
+          website_url?: string | null;
+          funding_amount_sought?: number | null;
+          annual_revenue?: number | null;
+          monthly_revenue?: number | null;
+          customer_count?: number | null;
+          employee_count?: number | null;
+          pitch_deck_path?: string | null;
+          pitch_deck_original_name?: string | null;
+          elevator_pitch?: string | null;
+          linkedin_url?: string | null;
+          twitter_url?: string | null;
+          instagram_url?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          founder_id?: string;
+          status?: Database["public"]["Enums"]["startup_status"];
+          name?: string | null;
+          logo_url?: string | null;
+          cover_image_url?: string | null;
+          tagline?: string | null;
+          description?: string | null;
+          industry_id?: string | null;
+          stage_id?: string | null;
+          country?: string | null;
+          city?: string | null;
+          website_url?: string | null;
+          funding_amount_sought?: number | null;
+          annual_revenue?: number | null;
+          monthly_revenue?: number | null;
+          customer_count?: number | null;
+          employee_count?: number | null;
+          pitch_deck_path?: string | null;
+          pitch_deck_original_name?: string | null;
+          elevator_pitch?: string | null;
+          linkedin_url?: string | null;
+          twitter_url?: string | null;
+          instagram_url?: string | null;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "startups_founder_id_fkey";
+            columns: ["founder_id"];
+            isOneToOne: true;
+            referencedRelation: "founder_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "startups_industry_id_fkey";
+            columns: ["industry_id"];
+            isOneToOne: false;
+            referencedRelation: "industries";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "startups_stage_id_fkey";
+            columns: ["stage_id"];
+            isOneToOne: false;
+            referencedRelation: "startup_stages";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -272,6 +385,7 @@ export type Database = {
     Enums: {
       user_role: "founder" | "investor";
       investor_type: "angel" | "vc" | "accelerator" | "syndicate" | "corporate";
+      startup_status: "draft" | "published";
     };
     CompositeTypes: Record<string, never>;
   };

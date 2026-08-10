@@ -29,7 +29,7 @@ export default async function FounderOnboardingPage() {
   if (!current) redirect("/login?next=/founder/onboarding");
 
   const profile = await getFounderProfileDetail(current.userId);
-  if (!profile) redirect("/founder");
+  if (!profile) redirect("/founder/startups");
 
   return (
     <Container className="max-w-2xl py-12">
@@ -45,13 +45,13 @@ export default async function FounderOnboardingPage() {
       <FounderProfileForm
         profile={profile}
         submitLabel="Finish"
-        redirectTo="/founder"
+        redirectTo="/founder/startups"
         successMessage="Your founder profile is ready."
       />
 
       <p className="text-caption mt-6 text-center text-gray-400">
         You can skip this for now and{" "}
-        <Link href="/founder" className="text-primary hover:underline">
+        <Link href="/founder/startups" className="text-primary hover:underline">
           go straight to your dashboard
         </Link>
         .

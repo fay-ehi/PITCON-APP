@@ -21,7 +21,7 @@ export default async function FounderProfilePage() {
   if (!current) redirect("/login?next=/founder/profile");
 
   const profile = await getFounderProfileDetail(current.userId);
-  if (!profile) redirect("/founder");
+  if (!profile) redirect("/founder/startups");
 
   const completion = calculateFounderProfileCompletion({
     avatarUrl: profile.avatarUrl,
@@ -88,10 +88,14 @@ export default async function FounderProfilePage() {
         </Card>
 
         <Card className="border-dashed bg-gray-50">
-          <CardContent className="text-small text-gray-500">
-            Your startup profile isn&apos;t part of this yet - that&apos;s
-            coming in a later sprint. This page is your personal founder
-            identity, separate from the business you&apos;re building.
+          <CardContent className="text-small flex items-center justify-between gap-4 text-gray-500">
+            <span>
+              This page is your personal founder identity, separate from the
+              business you&apos;re building.
+            </span>
+            <Button asChild variant="secondary" size="sm" className="shrink-0">
+              <Link href="/founder/startups">My Startups</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

@@ -40,7 +40,10 @@ export async function getCurrentUserProfile(): Promise<{
   return { userId: user.id, email: user.email, profile };
 }
 
-/** Where a signed-in user of a given role should land. */
+/** Where a signed-in user of a given role should land. As of Sprint 4,
+ * a founder's home is the My Startups workspace - `/founder` itself is
+ * kept alive only as a redirect to here (see app/founder/page.tsx), for
+ * old links/bookmarks. */
 export function roleHomePath(role: UserRole): string {
-  return role === "founder" ? "/founder" : "/investor";
+  return role === "founder" ? "/founder/startups" : "/investor";
 }
