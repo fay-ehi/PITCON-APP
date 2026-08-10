@@ -1,17 +1,30 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getCurrentUserProfile, roleHomePath } from "@/lib/auth/session";
-import { signOutAction } from "@/lib/auth/actions";
-import { Logo } from "@/components/shared/logo";
-import { Container } from "@/components/shared/container";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { InvestorTopBar } from "@/components/investor/topbar";
 
 /**
- * Everything under /investor requires a signed-in user whose profile role
- * is exactly 'investor'. See app/founder/layout.tsx for the mirrored
- * founder-side rationale.
+ * The Sprint 5 Investor application shell:
+ *
+ *   ApplicationShell
+ *   ├── TopBar     (components/investor/topbar.tsx)
+ *   └── children    — the currently routed workspace section
+ *
+ * Deliberately no sidebar - per the brief's "INVESTOR APPLICATION
+ * STRUCTURE" ("the Investor application should NOT use a persistent
+ * sidebar... Do not create a Founder-style sidebar for Investors").
+ * The Investor's primary workspace is Discover
+ * (app/investor/discover/page.tsx); Messages and Notifications are
+ * global utility links in the top bar rather than sidebar items, same
+ * as the Founder shell's rationale in app/founder/layout.tsx but
+ * without the sidebar half of it.
+ *
+ * Everything under /investor requires a signed-in user whose profile
+ * role is exactly 'investor'. See app/founder/layout.tsx for the
+ * mirrored founder-side rationale (proxy.ts handles "signed out
+ * entirely"; this layout is what enforces the founder-vs-investor
+ * distinction, and re-checks "signed in at all" too so this route
+ * group is fully self-protecting).
  */
 export default async function InvestorLayout({
   children,
@@ -20,40 +33,17 @@ export default async function InvestorLayout({
 }) {
   const current = await getCurrentUserProfile();
 
-  if (!current) redirect("/login?next=/investor");
+  if (!current) redirect("/login?next=/investor/discover");
   if (current.profile.role !== "investor") {
     redirect(roleHomePath(current.profile.role));
   }
 
   return (
-    <div className="flex min-h-full flex-col">
-      <header className="border-border border-b bg-white">
-        <Container className="flex h-16 items-center justify-between">
-          <Logo href="/investor" />
-          <div className="flex items-center gap-4">
-            <Link
-              href="/investor/profile"
-              className="text-small flex items-center gap-2 text-gray-500 hover:text-gray-900"
-            >
-              <Avatar className="size-7">
-                <AvatarImage
-                  src={current.profile.avatar_url ?? undefined}
-                  alt=""
-                />
-                <AvatarFallback className="text-caption">
-                  {current.profile.full_name.slice(0, 1).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              {current.profile.full_name}
-            </Link>
-            <form action={signOutAction}>
-              <Button type="submit" variant="secondary" size="sm">
-                Sign out
-              </Button>
-            </form>
-          </div>
-        </Container>
-      </header>
+    <div className="flex min-h-svh flex-col bg-gray-50">
+      <InvestorTopBar
+        fullName={current.profile.full_name}
+        avatarUrl={current.profile.avatar_url}
+      />
       <main className="flex-1">{children}</main>
     </div>
   );

@@ -10,7 +10,11 @@ import type { StartupDetail, StartupRow } from "@/types/startup";
  * the same way. */
 const PGRST_NO_ROWS = "PGRST116";
 
-function rowToDetail(
+/** Exported for reuse by lib/queries/discover.ts (Sprint 5) - Discover
+ * reads the same `startups` row shape for published startups, just
+ * through a different RLS-scoped query, so it maps rows to
+ * `StartupDetail` the same way rather than duplicating this logic. */
+export function rowToDetail(
   row: StartupRow,
   industries: Awaited<ReturnType<typeof getIndustries>>,
   stages: Awaited<ReturnType<typeof getStartupStages>>,
