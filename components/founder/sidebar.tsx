@@ -9,6 +9,7 @@ import {
   FOUNDER_SETTINGS_NAV_ITEM,
   type FounderNavItem,
 } from "@/components/founder/nav-items";
+import { UnreadBadge } from "@/components/shared/unread-badge";
 
 /**
  * The Founder workspace's persistent navigation - "Where can I go?" (see
@@ -20,8 +21,18 @@ import {
  * drawer," no hamburger/drawer/bottom-tab-bar variant exists at any
  * width. The sidebar is always visible; only its width and whether
  * labels are painted changes.
+ *
+ * As of Sprint 7, Messages carries a real unread-count badge -
+ * `unreadMessageCount` is fetched server-side in app/founder/layout.tsx
+ * (see `getFounderUnreadConversationCount`), same "fetched once per
+ * layout render, `UnreadBadge` renders nothing at zero" shape as
+ * Notifications' bell badge in `FounderTopBar`.
  */
-function FounderSidebar() {
+function FounderSidebar({
+  unreadMessageCount,
+}: {
+  unreadMessageCount: number;
+}) {
   const pathname = usePathname();
 
   const isActive = (href: string) =>
@@ -51,6 +62,9 @@ function FounderSidebar() {
             key={item.href}
             item={item}
             active={isActive(item.href)}
+            badgeCount={
+              item.href === "/founder/messages" ? unreadMessageCount : 0
+            }
           />
         ))}
       </nav>
@@ -68,16 +82,21 @@ function FounderSidebar() {
 function SidebarLink({
   item,
   active,
+  badgeCount = 0,
 }: {
   item: FounderNavItem;
   active: boolean;
+  badgeCount?: number;
 }) {
   const Icon = item.icon;
+  const label =
+    badgeCount > 0 ? `${item.label}, ${badgeCount} unread` : item.label;
 
   return (
     <Link
       href={item.href}
       aria-current={active ? "page" : undefined}
+      aria-label={badgeCount > 0 ? label : undefined}
       className={cn(
         "group rounded-control relative flex items-center justify-center gap-3 px-3 py-2.5 transition-colors lg:justify-start",
         active
@@ -96,7 +115,10 @@ function SidebarLink({
           active ? "opacity-100" : "opacity-0",
         )}
       />
-      <Icon className="size-5 shrink-0" aria-hidden />
+      <span className="relative flex shrink-0 items-center justify-center">
+        <Icon className="size-5 shrink-0" aria-hidden />
+        <UnreadBadge count={badgeCount} className="-top-1.5 -right-1.5" />
+      </span>
       <span
         className={cn(
           "text-small hidden truncate lg:inline",
@@ -105,7 +127,7 @@ function SidebarLink({
       >
         {item.label}
       </span>
-      <span className="sr-only lg:hidden">{item.label}</span>
+      <span className="sr-only lg:hidden">{label}</span>
 
       {/* Hover/focus tooltip for the icon-only compact rendering — the
           sr-only span above already covers screen readers, so this is
@@ -114,7 +136,7 @@ function SidebarLink({
         aria-hidden="true"
         className="rounded-control text-caption shadow-medium pointer-events-none absolute left-full z-30 ml-2 bg-gray-900 px-2 py-1 whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 lg:hidden"
       >
-        {item.label}
+        {label}
       </span>
     </Link>
   );

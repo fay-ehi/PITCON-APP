@@ -16,6 +16,7 @@
  *   - 20260810090000_founder_many_startups.sql          (Sprint 4)
  *   - 20260811090000_investor_discovery.sql              (Sprint 5)
  *   - 20260812100000_investor_interest.sql               (Sprint 6)
+ *   - 20260813090000_messaging.sql                        (Sprint 7)
  */
 export type Json =
   | string
@@ -470,6 +471,109 @@ export type Database = {
           },
         ];
       };
+      conversations: {
+        Row: {
+          id: string;
+          startup_id: string;
+          investor_id: string;
+          startup_interest_id: string;
+          last_message_at: string | null;
+          last_message_preview: string | null;
+          last_message_sender_id: string | null;
+          founder_unread: boolean;
+          investor_unread: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          startup_id: string;
+          investor_id: string;
+          startup_interest_id: string;
+          last_message_at?: string | null;
+          last_message_preview?: string | null;
+          last_message_sender_id?: string | null;
+          founder_unread?: boolean;
+          investor_unread?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          startup_id?: string;
+          investor_id?: string;
+          startup_interest_id?: string;
+          last_message_at?: string | null;
+          last_message_preview?: string | null;
+          last_message_sender_id?: string | null;
+          founder_unread?: boolean;
+          investor_unread?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "conversations_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "conversations_investor_id_fkey";
+            columns: ["investor_id"];
+            isOneToOne: false;
+            referencedRelation: "investor_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "conversations_startup_interest_id_fkey";
+            columns: ["startup_interest_id"];
+            isOneToOne: true;
+            referencedRelation: "startup_interests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      messages: {
+        Row: {
+          id: string;
+          conversation_id: string;
+          sender_id: string;
+          content: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          conversation_id: string;
+          sender_id: string;
+          content: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          conversation_id?: string;
+          sender_id?: string;
+          content?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "conversations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey";
+            columns: ["sender_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -486,7 +590,8 @@ export type Database = {
       investor_type: "angel" | "vc" | "accelerator" | "syndicate" | "corporate";
       startup_status: "draft" | "published";
       interest_status: "pending" | "accepted" | "declined";
-      notification_type: "interest_received" | "interest_accepted" | "interest_declined";
+      notification_type:
+        "interest_received" | "interest_accepted" | "interest_declined";
     };
     CompositeTypes: Record<string, never>;
   };

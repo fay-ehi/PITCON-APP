@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Heart, LogOut, MessageSquare, Settings as SettingsIcon, User } from "lucide-react";
+import {
+  Bell,
+  Heart,
+  LogOut,
+  MessageSquare,
+  Settings as SettingsIcon,
+  User,
+} from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -40,23 +47,28 @@ import { signOutAction } from "@/lib/auth/actions";
  *     app/investor/layout.tsx (see lib/queries/notifications.ts) now
  *     that Notifications has a real data model behind it. `UnreadBadge`
  *     renders nothing at zero, so this is visually identical to before
- *     Sprint 6 whenever there's nothing unread. Messages still has no
- *     badge - it has no data model behind it yet, same reasoning as
- *     before this sprint.
+ *     Sprint 6 whenever there's nothing unread.
+ *
+ * As of Sprint 7, Messages carries the same kind of badge -
+ * `unreadMessageCount` is fetched server-side in app/investor/layout.tsx
+ * (see `getInvestorUnreadConversationCount`) now that Messages has a
+ * real data model behind it too.
  */
 function InvestorTopBar({
   fullName,
   avatarUrl,
   unreadNotificationCount,
+  unreadMessageCount,
 }: {
   fullName: string;
   avatarUrl: string | null;
   unreadNotificationCount: number;
+  unreadMessageCount: number;
 }) {
   const initial = fullName.trim().slice(0, 1).toUpperCase() || "I";
 
   return (
-    <header className="sticky top-0 z-20 border-b border-border bg-white">
+    <header className="border-border sticky top-0 z-20 border-b bg-white">
       <Container className="flex h-16 items-center justify-between">
         <Logo href="/investor/discover" />
 
@@ -64,16 +76,21 @@ function InvestorTopBar({
           <Link
             href="/investor/interests"
             aria-label="My Interests"
-            className="flex size-10 items-center justify-center rounded-control text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+            className="rounded-control flex size-10 items-center justify-center text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
           >
             <Heart className="size-5" aria-hidden />
           </Link>
           <Link
             href="/investor/messages"
-            aria-label="Messages"
-            className="flex size-10 items-center justify-center rounded-control text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+            aria-label={
+              unreadMessageCount > 0
+                ? `Messages, ${unreadMessageCount} unread`
+                : "Messages"
+            }
+            className="rounded-control relative flex size-10 items-center justify-center text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
           >
             <MessageSquare className="size-5" aria-hidden />
+            <UnreadBadge count={unreadMessageCount} />
           </Link>
           <Link
             href="/investor/notifications"
@@ -82,22 +99,24 @@ function InvestorTopBar({
                 ? `Notifications, ${unreadNotificationCount} unread`
                 : "Notifications"
             }
-            className="relative flex size-10 items-center justify-center rounded-control text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+            className="rounded-control relative flex size-10 items-center justify-center text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
           >
             <Bell className="size-5" aria-hidden />
             <UnreadBadge count={unreadNotificationCount} />
           </Link>
 
           <DropdownMenu>
-            <DropdownMenuTrigger className="ml-1 flex items-center gap-2 rounded-control p-1 pr-2 outline-none transition-colors hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-primary/30">
+            <DropdownMenuTrigger className="rounded-control focus-visible:ring-primary/30 ml-1 flex items-center gap-2 p-1 pr-2 transition-colors outline-none hover:bg-gray-100 focus-visible:ring-2">
               <Avatar className="size-8">
                 <AvatarImage src={avatarUrl ?? undefined} alt="" />
-                <AvatarFallback className="text-caption">{initial}</AvatarFallback>
+                <AvatarFallback className="text-caption">
+                  {initial}
+                </AvatarFallback>
               </Avatar>
               <span className="sr-only">Open account menu</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="truncate text-small font-medium text-gray-900">
+              <DropdownMenuLabel className="text-small truncate font-medium text-gray-900">
                 {fullName}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />

@@ -35,3 +35,55 @@ export function formatRelativeDate(iso: string): string {
     year: "numeric",
   }).format(date);
 }
+
+/**
+ * A single message bubble's timestamp - Sprint 7. "10:42 AM" for
+ * anything sent today, a short date otherwise. Deliberately not
+ * relative like `formatRelativeDate`: a fixed clock time doesn't keep
+ * changing/re-rendering while a conversation just sits open, which
+ * matters more here than in a notification feed.
+ */
+export function formatMessageTime(iso: string): string {
+  const date = new Date(iso);
+  const now = new Date();
+  const isToday = date.toDateString() === now.toDateString();
+
+  if (isToday) {
+    return new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(date);
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(date);
+}
+
+/**
+ * Sprint 7's conversation list timestamp - "2m" / "3h" / "5d", matching
+ * the brief's "CONVERSATION LIST" mockup exactly. Distinct from
+ * `formatRelativeDate`'s "5 minutes ago": a list row needs the shortest
+ * form that still reads unambiguously, since it sits at the end of an
+ * already-busy row alongside a startup name, a participant name, and a
+ * message preview.
+ */
+export function formatShortRelativeTime(iso: string): string {
+  const date = new Date(iso);
+  const diffMs = Math.max(0, Date.now() - date.getTime());
+
+  const minutes = Math.floor(diffMs / MINUTE);
+  const hours = Math.floor(diffMs / HOUR);
+  const days = Math.floor(diffMs / DAY);
+
+  if (minutes < 1) return "Now";
+  if (minutes < 60) return `${minutes}m`;
+  if (hours < 24) return `${hours}h`;
+  if (days < 7) return `${days}d`;
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(date);
+}

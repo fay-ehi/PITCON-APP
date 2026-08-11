@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUserProfile, roleHomePath } from "@/lib/auth/session";
 import { getUnreadNotificationCount } from "@/lib/queries/notifications";
+import { getFounderUnreadConversationCount } from "@/lib/queries/messages";
 import { FounderSidebar } from "@/components/founder/sidebar";
 import { FounderTopBar } from "@/components/founder/topbar";
 
@@ -41,11 +42,14 @@ export default async function FounderLayout({
     redirect(roleHomePath(current.profile.role));
   }
 
-  const unreadNotificationCount = await getUnreadNotificationCount(current.userId);
+  const [unreadNotificationCount, unreadMessageCount] = await Promise.all([
+    getUnreadNotificationCount(current.userId),
+    getFounderUnreadConversationCount(current.userId),
+  ]);
 
   return (
     <div className="flex min-h-svh bg-gray-50">
-      <FounderSidebar />
+      <FounderSidebar unreadMessageCount={unreadMessageCount} />
       <div className="flex min-w-0 flex-1 flex-col">
         <FounderTopBar
           fullName={current.profile.full_name}

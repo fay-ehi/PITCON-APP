@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUserProfile, roleHomePath } from "@/lib/auth/session";
 import { getUnreadNotificationCount } from "@/lib/queries/notifications";
+import { getInvestorUnreadConversationCount } from "@/lib/queries/messages";
 import { InvestorTopBar } from "@/components/investor/topbar";
 
 /**
@@ -39,7 +40,10 @@ export default async function InvestorLayout({
     redirect(roleHomePath(current.profile.role));
   }
 
-  const unreadNotificationCount = await getUnreadNotificationCount(current.userId);
+  const [unreadNotificationCount, unreadMessageCount] = await Promise.all([
+    getUnreadNotificationCount(current.userId),
+    getInvestorUnreadConversationCount(current.userId),
+  ]);
 
   return (
     <div className="flex min-h-svh flex-col bg-gray-50">
@@ -47,6 +51,7 @@ export default async function InvestorLayout({
         fullName={current.profile.full_name}
         avatarUrl={current.profile.avatar_url}
         unreadNotificationCount={unreadNotificationCount}
+        unreadMessageCount={unreadMessageCount}
       />
       <main className="flex-1">{children}</main>
     </div>
