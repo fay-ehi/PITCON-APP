@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { UnreadBadge } from "@/components/shared/unread-badge";
 import { signOutAction } from "@/lib/auth/actions";
 
 /**
@@ -22,17 +23,21 @@ import { signOutAction } from "@/lib/auth/actions";
  * own heading (e.g. "My Startups"), so this stays out of that section's
  * way rather than duplicating it.
  *
- * There is no unread-count badge on the bell: Notifications has no data
- * model behind it yet (see app/founder/notifications/page.tsx), and a
- * fabricated badge would be exactly the kind of fake data the brief
- * explicitly rules out.
+ * As of Sprint 6, the bell carries a real unread-count badge -
+ * `unreadNotificationCount` is fetched server-side in
+ * app/founder/layout.tsx (see lib/queries/notifications.ts) now that
+ * Notifications has a real data model behind it (the Sprint 6 Interest
+ * workflow). `UnreadBadge` renders nothing at zero, so this is visually
+ * identical to before Sprint 6 whenever there's nothing unread.
  */
 function FounderTopBar({
   fullName,
   avatarUrl,
+  unreadNotificationCount,
 }: {
   fullName: string;
   avatarUrl: string | null;
+  unreadNotificationCount: number;
 }) {
   const initial = fullName.trim().slice(0, 1).toUpperCase() || "F";
 
@@ -40,10 +45,15 @@ function FounderTopBar({
     <header className="border-border sticky top-0 z-10 flex h-16 shrink-0 items-center justify-end gap-1 border-b bg-white px-4 sm:px-6">
       <Link
         href="/founder/notifications"
-        aria-label="Notifications"
-        className="rounded-control flex size-10 items-center justify-center text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+        aria-label={
+          unreadNotificationCount > 0
+            ? `Notifications, ${unreadNotificationCount} unread`
+            : "Notifications"
+        }
+        className="rounded-control relative flex size-10 items-center justify-center text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
       >
         <Bell className="size-5" aria-hidden />
+        <UnreadBadge count={unreadNotificationCount} />
       </Link>
 
       <DropdownMenu>

@@ -8,6 +8,7 @@ import { DiscoverEmptyState } from "@/components/investor/discover-empty-state";
 import { DiscoverPreviewDialog } from "@/components/investor/discover-preview-dialog";
 import type { DiscoverFilters } from "@/lib/queries/discover";
 import type { StartupDetail } from "@/types/startup";
+import type { InterestStatus } from "@/types/interest";
 
 /**
  * Owns everything below Discover's search/filter bar: the results
@@ -29,6 +30,16 @@ import type { StartupDetail } from "@/types/startup";
  * is also what makes the dialog able to open with a skeleton
  * immediately, before the real startup data has actually arrived - see
  * `dialogLoading` below.
+ *
+ * Sprint 6's `ownInterestStatus` (the signed-in investor's own interest
+ * in `selectedStartup`, or `null`) rides along on exactly the same
+ * server-confirmed/optimistic-gated path as `selectedStartup` itself
+ * (see `dialogOwnInterestStatus` below) - it's fetched by the same
+ * `Promise.all` in app/investor/discover/page.tsx and needs to become
+ * visible at the same moment `dialogStartup` does, not before (there's
+ * nothing to show it against while the dialog is still on its loading
+ * skeleton) and not after (a flash of "no interest yet" on a startup
+ * the investor already expressed interest in would be wrong).
  */
 function DiscoverWorkspace({
   initialStartups,
@@ -39,6 +50,7 @@ function DiscoverWorkspace({
   clearFiltersHref,
   selectedStartupId,
   selectedStartup,
+  ownInterestStatus,
   backHref,
 }: {
   initialStartups: StartupDetail[];
@@ -53,6 +65,10 @@ function DiscoverWorkspace({
    * either while unselected, or if the id doesn't resolve to an
    * available published startup. */
   selectedStartup: StartupDetail | null;
+  /** Server-confirmed own-interest status for `selectedStartupId` -
+   * `null` while unselected, or if the investor hasn't expressed
+   * interest in it yet. See `getOwnInterestForStartup`. */
+  ownInterestStatus: InterestStatus | null;
   backHref: string;
 }) {
   const router = useRouter();
@@ -81,6 +97,7 @@ function DiscoverWorkspace({
   // data - show a skeleton for that window rather than nothing.
   const dialogLoading = Boolean(optimisticId) && optimisticId !== selectedStartupId;
   const dialogStartup = optimisticId && !dialogLoading ? selectedStartup : null;
+  const dialogOwnInterestStatus = optimisticId && !dialogLoading ? ownInterestStatus : null;
 
   return (
     <>
@@ -104,6 +121,7 @@ function DiscoverWorkspace({
         open={Boolean(optimisticId)}
         loading={dialogLoading}
         startup={dialogStartup}
+        ownInterestStatus={dialogOwnInterestStatus}
         onOpenChange={(next) => {
           if (!next) closePreview();
         }}

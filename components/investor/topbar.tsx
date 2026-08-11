@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, LogOut, MessageSquare, Settings as SettingsIcon, User } from "lucide-react";
+import { Bell, Heart, LogOut, MessageSquare, Settings as SettingsIcon, User } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Logo } from "@/components/shared/logo";
 import { Container } from "@/components/shared/container";
+import { UnreadBadge } from "@/components/shared/unread-badge";
 import { signOutAction } from "@/lib/auth/actions";
 
 /**
@@ -24,19 +25,33 @@ import { signOutAction } from "@/lib/auth/actions";
  * controls), this is the Investor app's entire persistent chrome, so it
  * also carries the logo on the left - see the brief's top-bar mockup.
  *
- * There are no unread-count badges on Messages/Notifications: neither
- * has a data model behind it yet (see app/investor/messages/page.tsx
- * and app/investor/notifications/page.tsx), and a fabricated badge
- * would be exactly the kind of fake data the brief rules out ("Do not
- * duplicate notifications inside Discover unnecessarily" / no fake
- * popularity or engagement signals anywhere in this sprint).
+ * As of Sprint 6:
+ *   - a "My Interests" icon joins Messages/Notifications. The brief's
+ *     Sprint 5 top-bar mockup ("💬 🔔 [Avatar]") predates My Interests
+ *     existing at all - Sprint 6 explicitly leaves its placement up to
+ *     this sprint ("create an appropriate Investor Interests destination
+ *     without introducing a sidebar"). A persistent top-bar icon,
+ *     alongside the other two global-utility destinations, is that
+ *     placement, rather than extending the already-specified avatar menu
+ *     (Investor Name / Investor Profile / Settings / Log out) with a
+ *     fifth, unrelated entry.
+ *   - the Notifications bell carries a real unread-count badge -
+ *     `unreadNotificationCount` is fetched server-side in
+ *     app/investor/layout.tsx (see lib/queries/notifications.ts) now
+ *     that Notifications has a real data model behind it. `UnreadBadge`
+ *     renders nothing at zero, so this is visually identical to before
+ *     Sprint 6 whenever there's nothing unread. Messages still has no
+ *     badge - it has no data model behind it yet, same reasoning as
+ *     before this sprint.
  */
 function InvestorTopBar({
   fullName,
   avatarUrl,
+  unreadNotificationCount,
 }: {
   fullName: string;
   avatarUrl: string | null;
+  unreadNotificationCount: number;
 }) {
   const initial = fullName.trim().slice(0, 1).toUpperCase() || "I";
 
@@ -47,6 +62,13 @@ function InvestorTopBar({
 
         <div className="flex items-center gap-1">
           <Link
+            href="/investor/interests"
+            aria-label="My Interests"
+            className="flex size-10 items-center justify-center rounded-control text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+          >
+            <Heart className="size-5" aria-hidden />
+          </Link>
+          <Link
             href="/investor/messages"
             aria-label="Messages"
             className="flex size-10 items-center justify-center rounded-control text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
@@ -55,10 +77,15 @@ function InvestorTopBar({
           </Link>
           <Link
             href="/investor/notifications"
-            aria-label="Notifications"
-            className="flex size-10 items-center justify-center rounded-control text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+            aria-label={
+              unreadNotificationCount > 0
+                ? `Notifications, ${unreadNotificationCount} unread`
+                : "Notifications"
+            }
+            className="relative flex size-10 items-center justify-center rounded-control text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
           >
             <Bell className="size-5" aria-hidden />
+            <UnreadBadge count={unreadNotificationCount} />
           </Link>
 
           <DropdownMenu>

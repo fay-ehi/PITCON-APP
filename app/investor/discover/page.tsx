@@ -8,6 +8,7 @@ import {
   getDiscoverableStartups,
   type DiscoverFilters,
 } from "@/lib/queries/discover";
+import { getOwnInterestForStartup } from "@/lib/queries/interests";
 import { getIndustries, getStartupStages } from "@/lib/queries/profile";
 import { isFundingBucketId } from "@/constants/funding-buckets";
 import { Container } from "@/components/shared/container";
@@ -48,6 +49,13 @@ type DiscoverSearchParams = {
  * with it) is owned by discover-workspace.tsx, a client component -
  * see its top comment for why that's `useOptimistic`-based rather than
  * driven directly off these server-fetched props.
+ *
+ * Sprint 6 adds one more piece of server-fetched state alongside
+ * `selectedStartup`: whether the signed-in investor already has an
+ * interest in it (`ownInterest`), so the preview dialog's "Express
+ * Interest" control renders in the right state on first paint - no
+ * loading flash, no client-only guess. Fetched the same way, gated the
+ * same way (only when a startup is actually selected).
  */
 export default async function InvestorDiscoverPage({
   searchParams,
@@ -69,11 +77,14 @@ export default async function InvestorDiscoverPage({
   const filters: DiscoverFilters = { q, industryId, stageId, country, funding };
   const hasActiveFilters = Boolean(q || industryId || stageId || country || funding);
 
-  const [{ startups, hasMore }, industries, stages, selectedStartup] = await Promise.all([
+  const [{ startups, hasMore }, industries, stages, selectedStartup, ownInterest] = await Promise.all([
     getDiscoverableStartups(filters, 0, DISCOVER_PAGE_SIZE),
     getIndustries(),
     getStartupStages(),
     selectedStartupId ? getDiscoverableStartupById(selectedStartupId) : Promise.resolve(null),
+    selectedStartupId
+      ? getOwnInterestForStartup(current.userId, selectedStartupId)
+      : Promise.resolve(null),
   ]);
 
   // The query string every card link, the dialog's "back" close
@@ -115,6 +126,7 @@ export default async function InvestorDiscoverPage({
           clearFiltersHref={clearFiltersHref}
           selectedStartupId={selectedStartupId ?? null}
           selectedStartup={selectedStartup}
+          ownInterestStatus={ownInterest?.status ?? null}
           backHref={backHref}
         />
       </div>

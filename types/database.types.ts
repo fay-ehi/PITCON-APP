@@ -13,6 +13,9 @@
  *   - 20260808120000_auth_profile_foundation.sql       (Sprint 1)
  *   - 20260808130000_founder_investor_profile_details.sql (Sprint 2)
  *   - 20260809080000_startups.sql                       (Sprint 3)
+ *   - 20260810090000_founder_many_startups.sql          (Sprint 4)
+ *   - 20260811090000_investor_discovery.sql              (Sprint 5)
+ *   - 20260812100000_investor_interest.sql               (Sprint 6)
  */
 export type Json =
   | string
@@ -371,6 +374,102 @@ export type Database = {
           },
         ];
       };
+      startup_interests: {
+        Row: {
+          id: string;
+          startup_id: string;
+          investor_id: string;
+          status: Database["public"]["Enums"]["interest_status"];
+          responded_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          startup_id: string;
+          investor_id: string;
+          status?: Database["public"]["Enums"]["interest_status"];
+          responded_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          startup_id?: string;
+          investor_id?: string;
+          status?: Database["public"]["Enums"]["interest_status"];
+          responded_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "startup_interests_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "startup_interests_investor_id_fkey";
+            columns: ["investor_id"];
+            isOneToOne: false;
+            referencedRelation: "investor_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      notifications: {
+        Row: {
+          id: string;
+          recipient_id: string;
+          type: Database["public"]["Enums"]["notification_type"];
+          title: string;
+          body: string;
+          link_path: string;
+          startup_interest_id: string | null;
+          read_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          recipient_id: string;
+          type: Database["public"]["Enums"]["notification_type"];
+          title: string;
+          body: string;
+          link_path: string;
+          startup_interest_id?: string | null;
+          read_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          recipient_id?: string;
+          type?: Database["public"]["Enums"]["notification_type"];
+          title?: string;
+          body?: string;
+          link_path?: string;
+          startup_interest_id?: string | null;
+          read_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notifications_recipient_id_fkey";
+            columns: ["recipient_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_startup_interest_id_fkey";
+            columns: ["startup_interest_id"];
+            isOneToOne: false;
+            referencedRelation: "startup_interests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -386,6 +485,8 @@ export type Database = {
       user_role: "founder" | "investor";
       investor_type: "angel" | "vc" | "accelerator" | "syndicate" | "corporate";
       startup_status: "draft" | "published";
+      interest_status: "pending" | "accepted" | "declined";
+      notification_type: "interest_received" | "interest_accepted" | "interest_declined";
     };
     CompositeTypes: Record<string, never>;
   };

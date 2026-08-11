@@ -1,51 +1,66 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { Bell } from "lucide-react";
 
+import { getCurrentUserProfile } from "@/lib/auth/session";
+import { getNotificationsForUser } from "@/lib/queries/notifications";
 import { Container } from "@/components/shared/container";
 import { Card, CardContent } from "@/components/ui/card";
+import { NotificationList } from "@/components/notifications/notification-list";
+import { MarkNotificationsRead } from "@/components/notifications/mark-notifications-read";
 
 export const metadata: Metadata = {
   title: "Notifications",
 };
 
 /**
- * Notifications workspace - a chronological event feed (investor
- * interest, new messages, publishing confirmations, startup updates,
- * account events), distinct from the detailed Interests record. No
- * `notifications` table exists yet, so there's nothing to feed a "Today
- * / Earlier" grouped list or a "Mark all as read" action with - both are
- * straightforward to add once notification-producing events (interest,
- * messaging) exist. Renders the real "no notifications yet" state
- * rather than fabricated entries, per the brief's "do not create fake
- * notifications just to populate the UI."
+ * Notifications destination for the Founder sidebar's bell - a
+ * chronological event feed, as distinct from Interests (the full,
+ * detailed investor-interest record - see app/founder/interests/).
  *
- * The top bar's bell (`components/founder/topbar.tsx`) links here and
- * intentionally carries no unread-count badge for the same reason.
+ * As of Sprint 6, this reads real `notifications` rows (see
+ * lib/queries/notifications.ts) - previously always the "no
+ * notifications yet" placeholder, since nothing populated a
+ * `notifications` table before this sprint's Interest workflow did.
+ * `MarkNotificationsRead` marks everything shown here read right after
+ * this snapshot renders, so the badge in FounderTopBar reflects it on
+ * the next navigation without this page itself losing the "which of
+ * these were new" distinction on this visit.
  */
-export default function NotificationsPage() {
+export default async function FounderNotificationsPage() {
+  const current = await getCurrentUserProfile();
+  if (!current) redirect("/login?next=/founder/notifications");
+
+  const notifications = await getNotificationsForUser(current.userId);
+
   return (
     <Container className="py-10 sm:py-12">
+      <MarkNotificationsRead />
+
       <h1 className="text-h2 text-gray-900">Notifications</h1>
-      <p className="text-small mt-1 text-gray-500">
-        Investor interest, messages, and updates about your startups.
+      <p className="mt-1 text-small text-gray-500">
+        Investor interest and account updates.
       </p>
 
-      <Card className="mt-8">
-        <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-          <div className="rounded-pill bg-primary-50 flex size-14 items-center justify-center">
-            <Bell className="text-primary size-6" aria-hidden />
-          </div>
-          <div>
-            <p className="text-small font-medium text-gray-900">
-              No notifications yet
-            </p>
-            <p className="text-caption mt-1 max-w-xs text-gray-500">
-              Investor interest, new messages, and startup updates will show up
-              here as they happen.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      {notifications.length > 0 ? (
+        <div className="mt-8">
+          <NotificationList notifications={notifications} />
+        </div>
+      ) : (
+        <Card className="mt-8">
+          <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
+            <div className="flex size-14 items-center justify-center rounded-pill bg-primary-50">
+              <Bell className="size-6 text-primary" aria-hidden />
+            </div>
+            <div>
+              <p className="text-small font-medium text-gray-900">No notifications yet</p>
+              <p className="mt-1 max-w-xs text-caption text-gray-500">
+                New investor interest and updates will show up here as they happen.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </Container>
   );
 }

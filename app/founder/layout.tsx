@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { getCurrentUserProfile, roleHomePath } from "@/lib/auth/session";
+import { getUnreadNotificationCount } from "@/lib/queries/notifications";
 import { FounderSidebar } from "@/components/founder/sidebar";
 import { FounderTopBar } from "@/components/founder/topbar";
 
@@ -40,6 +41,8 @@ export default async function FounderLayout({
     redirect(roleHomePath(current.profile.role));
   }
 
+  const unreadNotificationCount = await getUnreadNotificationCount(current.userId);
+
   return (
     <div className="flex min-h-svh bg-gray-50">
       <FounderSidebar />
@@ -47,6 +50,7 @@ export default async function FounderLayout({
         <FounderTopBar
           fullName={current.profile.full_name}
           avatarUrl={current.profile.avatar_url}
+          unreadNotificationCount={unreadNotificationCount}
         />
         <main className="flex-1">{children}</main>
       </div>

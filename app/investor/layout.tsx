@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { getCurrentUserProfile, roleHomePath } from "@/lib/auth/session";
+import { getUnreadNotificationCount } from "@/lib/queries/notifications";
 import { InvestorTopBar } from "@/components/investor/topbar";
 
 /**
@@ -38,11 +39,14 @@ export default async function InvestorLayout({
     redirect(roleHomePath(current.profile.role));
   }
 
+  const unreadNotificationCount = await getUnreadNotificationCount(current.userId);
+
   return (
     <div className="flex min-h-svh flex-col bg-gray-50">
       <InvestorTopBar
         fullName={current.profile.full_name}
         avatarUrl={current.profile.avatar_url}
+        unreadNotificationCount={unreadNotificationCount}
       />
       <main className="flex-1">{children}</main>
     </div>

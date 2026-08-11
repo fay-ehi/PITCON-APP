@@ -15,9 +15,11 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } fr
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProfileField } from "@/components/profile/profile-field";
+import { ExpressInterestButton } from "@/components/investor/express-interest-button";
 import { getDiscoverPitchDeckUrlAction } from "@/lib/discover/discover-actions";
 import { formatCount, formatLocation, formatUsd } from "@/lib/startup/format";
 import type { StartupDetail } from "@/types/startup";
+import type { InterestStatus } from "@/types/interest";
 
 /**
  * The selected startup's preview, as an overlay on top of Discover -
@@ -52,16 +54,24 @@ import type { StartupDetail } from "@/types/startup";
  * preview" from the original brief, unchanged); at the `lg` breakpoint
  * it becomes a large centered panel over a dimmed backdrop, with the
  * results grid still visible (and dimmed) behind it.
+ *
+ * Sprint 6's `ownInterestStatus` follows `startup`/`loading` exactly:
+ * `null` while the dialog is on its loading skeleton (there's nothing
+ * to show it against yet), otherwise the signed-in investor's own
+ * interest status for this startup - see discover-workspace.tsx's
+ * `dialogOwnInterestStatus` for where that gating actually happens.
  */
 function DiscoverPreviewDialog({
   open,
   loading,
   startup,
+  ownInterestStatus,
   onOpenChange,
 }: {
   open: boolean;
   loading: boolean;
   startup: StartupDetail | null;
+  ownInterestStatus: InterestStatus | null;
   onOpenChange: (open: boolean) => void;
 }) {
   return (
@@ -97,7 +107,7 @@ function DiscoverPreviewDialog({
           {loading ? (
             <PreviewSkeleton />
           ) : startup ? (
-            <PreviewContent startup={startup} />
+            <PreviewContent startup={startup} ownInterestStatus={ownInterestStatus} />
           ) : (
             <NotFoundState />
           )}
@@ -143,7 +153,13 @@ function PreviewSkeleton() {
   );
 }
 
-function PreviewContent({ startup }: { startup: StartupDetail }) {
+function PreviewContent({
+  startup,
+  ownInterestStatus,
+}: {
+  startup: StartupDetail;
+  ownInterestStatus: InterestStatus | null;
+}) {
   const location = formatLocation(startup.city, startup.country);
   const hasLinks = Boolean(startup.linkedinUrl || startup.twitterUrl || startup.instagramUrl);
 
@@ -263,12 +279,13 @@ function PreviewContent({ startup }: { startup: StartupDetail }) {
         </div>
       )}
 
-      {/* Future interaction space (next sprint): the "Express Interest"
-       * primary action mounts here, directly below the preview content -
-       * see the brief's "FUTURE INTERACTION SPACE". Deliberately left
-       * unrendered: Sprint 5 explicitly excludes that action, and a
-       * placeholder button that does nothing would be worse than no
-       * button at all. */}
+      {/* Sprint 6's core action, directly below the preview content, per
+       * the brief's "FUTURE INTERACTION SPACE" (Sprint 5) / "CORE
+       * ACTION" (Sprint 6) - the one primary, non-competing action on
+       * this panel. */}
+      <div className="border-t border-border pt-6">
+        <ExpressInterestButton startupId={startup.id} initialStatus={ownInterestStatus} />
+      </div>
     </div>
   );
 }
