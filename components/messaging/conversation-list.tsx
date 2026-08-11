@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Building2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatShortRelativeTime } from "@/lib/format/date";
 import type { ConversationSummary } from "@/types/message";
 
@@ -20,15 +21,25 @@ import type { ConversationSummary } from "@/types/message";
  * Unread state is never color-only: the dot carries an `aria-label`, and
  * unread rows also render in a heavier font weight, same two-channel
  * pattern as `NotificationList`.
+ *
+ * Who's the headline differs by role: a Founder is scanning for *which
+ * investor* is messaging them, so the investor's own avatar/name lead
+ * (same identify-the-person pattern as `InterestRow`). An Investor
+ * already knows who they are; they're scanning for *which startup* a
+ * thread is about, so the startup's logo/name lead instead. Each row
+ * only carries the one identity relevant to that scan, plus the last
+ * message preview - not both, to keep the row scannable.
  */
 function ConversationList({
   conversations,
   basePath,
+  role,
   activeConversationId,
   currentUserId,
 }: {
   conversations: ConversationSummary[];
   basePath: "/founder/messages" | "/investor/messages";
+  role: "founder" | "investor";
   activeConversationId: string | null;
   currentUserId: string;
 }) {
@@ -41,6 +52,9 @@ function ConversationList({
         const isActive = conversation.id === activeConversationId;
         const isOwnLastMessage =
           conversation.lastMessageSenderId === currentUserId;
+        const initial =
+          conversation.otherParticipant.fullName.trim().slice(0, 1).toUpperCase() ||
+          "?";
 
         return (
           <li key={conversation.id}>
@@ -61,18 +75,28 @@ function ConversationList({
                 )}
               </div>
 
-              <div className="rounded-card border-border flex size-10 shrink-0 items-center justify-center overflow-hidden border bg-gray-100">
-                {conversation.startup.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={conversation.startup.logoUrl}
+              {role === "founder" ? (
+                <Avatar className="size-10 shrink-0">
+                  <AvatarImage
+                    src={conversation.otherParticipant.avatarUrl ?? undefined}
                     alt=""
-                    className="size-full object-cover"
                   />
-                ) : (
-                  <Building2 className="size-4 text-gray-300" aria-hidden />
-                )}
-              </div>
+                  <AvatarFallback>{initial}</AvatarFallback>
+                </Avatar>
+              ) : (
+                <div className="rounded-card border-border flex size-10 shrink-0 items-center justify-center overflow-hidden border bg-gray-100">
+                  {conversation.startup.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={conversation.startup.logoUrl}
+                      alt=""
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <Building2 className="size-4 text-gray-300" aria-hidden />
+                  )}
+                </div>
+              )}
 
               <div className="min-w-0 flex-1">
                 <p
@@ -81,10 +105,9 @@ function ConversationList({
                     conversation.isUnread ? "font-semibold" : "font-medium",
                   )}
                 >
-                  {conversation.startup.name || "Untitled startup"}
-                </p>
-                <p className="text-caption truncate text-gray-500">
-                  {conversation.otherParticipant.fullName}
+                  {role === "founder"
+                    ? conversation.otherParticipant.fullName
+                    : conversation.startup.name || "Untitled startup"}
                 </p>
                 {conversation.lastMessagePreview && (
                   <p

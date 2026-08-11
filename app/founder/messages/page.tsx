@@ -49,9 +49,17 @@ export default async function MessagesPage({
   ]);
 
   return (
-    <Container className="py-10 sm:py-12">
-      <h1 className="text-h2 text-gray-900">Messages</h1>
-      <p className="text-small mt-1 text-gray-500">
+    // `h-[calc(100svh-4rem)]` (4rem = the topbar's `h-16`, the only
+    // fixed chrome above this) plus `flex flex-col` bounds this whole
+    // page to exactly what's left of the viewport, instead of letting
+    // it grow with content and rely on the page scrolling. `Messages
+    // Workspace` fills whatever's left after the heading via its own
+    // `flex-1 min-h-0` - see that component for why a *fixed* pane
+    // height wasn't enough on its own (a tall enough page around it
+    // still pushed the composer below the fold).
+    <Container className="flex h-[calc(100svh-4rem)] flex-col py-10 sm:py-12">
+      <h1 className="text-h2 shrink-0 text-gray-900">Messages</h1>
+      <p className="text-small mt-1 shrink-0 text-gray-500">
         Conversations with investors interested in your startups.
       </p>
 

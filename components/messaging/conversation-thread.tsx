@@ -16,6 +16,7 @@ import {
   markConversationReadAction,
   sendMessageAction,
 } from "@/lib/messages/message-actions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   MessageBubble,
   type ThreadMessage,
@@ -51,6 +52,7 @@ import type { ConversationDetail, MessageSummary } from "@/types/message";
  */
 function ConversationThread({
   basePath,
+  role,
   conversation,
   initialMessages,
   hasMoreMessages,
@@ -58,13 +60,15 @@ function ConversationThread({
   startupProfileHref,
 }: {
   basePath: "/founder/messages" | "/investor/messages";
+  role: "founder" | "investor";
   conversation: ConversationDetail;
   initialMessages: MessageSummary[];
   hasMoreMessages: boolean;
   currentUserId: string;
   /** Where "View startup" should link to, or `null` when there's nowhere
    * appropriate to send the viewer (see the brief's "if appropriate" for
-   * this control) - resolved by `MessagesWorkspace`. */
+   * this control, and `MessagesWorkspace`'s founder-gets-none reasoning)
+   * - resolved by `MessagesWorkspace`. */
   startupProfileHref: string | null;
 }) {
   const [messages, setMessages] = useState<ThreadMessage[]>(initialMessages);
@@ -219,26 +223,45 @@ function ConversationThread({
           <ArrowLeft className="size-4" aria-hidden />
         </Link>
 
-        <div className="rounded-card border-border flex size-9 shrink-0 items-center justify-center overflow-hidden border bg-gray-100">
-          {conversation.startup.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={conversation.startup.logoUrl}
+        {role === "founder" ? (
+          <Avatar className="size-9 shrink-0">
+            <AvatarImage
+              src={conversation.otherParticipant.avatarUrl ?? undefined}
               alt=""
-              className="size-full object-cover"
             />
-          ) : (
-            <Building2 className="size-4 text-gray-300" aria-hidden />
-          )}
-        </div>
+            <AvatarFallback>
+              {conversation.otherParticipant.fullName
+                .trim()
+                .slice(0, 1)
+                .toUpperCase() || "?"}
+            </AvatarFallback>
+          </Avatar>
+        ) : (
+          <div className="rounded-card border-border flex size-9 shrink-0 items-center justify-center overflow-hidden border bg-gray-100">
+            {conversation.startup.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={conversation.startup.logoUrl}
+                alt=""
+                className="size-full object-cover"
+              />
+            ) : (
+              <Building2 className="size-4 text-gray-300" aria-hidden />
+            )}
+          </div>
+        )}
 
         <div className="min-w-0 flex-1">
           <p className="text-small truncate font-semibold text-gray-900">
-            {conversation.startup.name || "Untitled startup"}
+            {role === "founder"
+              ? conversation.otherParticipant.fullName
+              : conversation.startup.name || "Untitled startup"}
           </p>
-          <p className="text-caption truncate text-gray-500">
-            {conversation.otherParticipant.fullName}
-          </p>
+          {role === "founder" && (
+            <p className="text-caption truncate text-gray-500">
+              {conversation.startup.name || "Untitled startup"}
+            </p>
+          )}
         </div>
 
         {startupProfileHref && (

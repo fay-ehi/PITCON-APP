@@ -50,19 +50,34 @@ function MessagesWorkspace({
 
   const hasSelection = Boolean(activeConversationId && activeConversation);
 
-  // A founder always owns the startup, published or not, so their own
-  // startup page always resolves. An investor's "View startup" points at
-  // Discover's preview, which only resolves published startups - see the
-  // brief's "if appropriate" for this control; a since-unpublished
-  // startup simply means the link isn't offered, not a broken one.
+  // Only the Investor gets a "View startup" link here - a Founder is
+  // already the owner of the startup being discussed, so sending them to
+  // a read-only view of their own listing from inside a chat with the
+  // investor adds a link with nothing new to show. An investor's "View
+  // startup" points at Discover's preview, which only resolves published
+  // startups - see the brief's "if appropriate" for this control; a
+  // since-unpublished startup simply means the link isn't offered, not a
+  // broken one.
   const startupProfileHref =
-    activeConversation &&
-    (role === "founder"
-      ? `/founder/startups/${activeConversation.startup.id}`
-      : `/investor/discover?startup=${activeConversation.startup.id}`);
+    activeConversation && role === "investor"
+      ? `/investor/discover?startup=${activeConversation.startup.id}`
+      : null;
 
+  // `flex-1 min-h-0`, not a fixed height: the page (see
+  // app/founder/messages/page.tsx and app/investor/messages/page.tsx)
+  // already bounds itself to the viewport and hands this component
+  // whatever's left after the heading, via a `flex flex-col` ancestor.
+  // A fixed height here (what this used to be) only bounds the pane's
+  // *own* scrolling - it does nothing to stop the page around it from
+  // growing taller than the viewport and pushing the whole pane, composer
+  // included, below the fold. `min-h-0` is required alongside `flex-1`
+  // because a flex item's default `min-height: auto` would otherwise let
+  // its content (a whole conversation's worth of messages) demand more
+  // height than the flex parent actually has, defeating the point.
+  // `min-h-[26rem]` keeps this usable on very short viewports instead of
+  // collapsing toward zero.
   return (
-    <div className="rounded-card border-border mt-8 grid grid-cols-1 overflow-hidden border bg-white md:h-[36rem] md:grid-cols-[300px_1fr]">
+    <div className="rounded-card border-border mt-8 grid min-h-[26rem] flex-1 grid-cols-1 overflow-hidden border bg-white md:grid-cols-[300px_1fr]">
       <div
         className={cn(
           "border-border flex flex-col md:border-r",
@@ -72,6 +87,7 @@ function MessagesWorkspace({
         <ConversationList
           conversations={conversations}
           basePath={basePath}
+          role={role}
           activeConversationId={activeConversationId}
           currentUserId={currentUserId}
         />
@@ -87,6 +103,7 @@ function MessagesWorkspace({
           <ConversationThread
             key={activeConversation.id}
             basePath={basePath}
+            role={role}
             conversation={activeConversation}
             initialMessages={initialMessages}
             hasMoreMessages={hasMoreMessages}

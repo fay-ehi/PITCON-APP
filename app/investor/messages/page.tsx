@@ -44,9 +44,12 @@ export default async function InvestorMessagesPage({
   ]);
 
   return (
-    <Container className="py-10 sm:py-12">
-      <h1 className="text-h2 text-gray-900">Messages</h1>
-      <p className="text-small mt-1 text-gray-500">
+    // See app/founder/messages/page.tsx for why this is bounded to the
+    // viewport (`h-[calc(100svh-4rem)]`, 4rem = the top bar's `h-16`)
+    // instead of growing with content.
+    <Container className="flex h-[calc(100svh-4rem)] flex-col py-10 sm:py-12">
+      <h1 className="text-h2 shrink-0 text-gray-900">Messages</h1>
+      <p className="text-small mt-1 shrink-0 text-gray-500">
         Conversations with founders about startups you&apos;re interested in.
       </p>
 
