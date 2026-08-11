@@ -12,10 +12,7 @@ import { getIndustries, getStartupStages } from "@/lib/queries/profile";
 import { isFundingBucketId } from "@/constants/funding-buckets";
 import { Container } from "@/components/shared/container";
 import { DiscoverControls } from "@/components/investor/discover-controls";
-import { StartupResultsGrid } from "@/components/investor/startup-results-grid";
-import { DiscoverEmptyState } from "@/components/investor/discover-empty-state";
-import { DiscoverPreviewPanel } from "@/components/investor/discover-preview-panel";
-import { DiscoverPreviewEmptyState } from "@/components/investor/discover-preview-empty-state";
+import { DiscoverWorkspace } from "@/components/investor/discover-workspace";
 
 export const metadata: Metadata = {
   title: "Discover",
@@ -40,10 +37,17 @@ type DiscoverSearchParams = {
  * all lives in the URL's search params, read here in one place -
  * refresh, browser back/forward, and "does my filtered view survive
  * selecting a startup" all fall out of that for free, per the brief's
- * "SEARCH + FILTER URL STATE" section. The desktop-vs-mobile split
- * (list+preview side by side vs. one full-width pane at a time) is
- * plain responsive Tailwind classes computed from `selectedStartupId`
- * below - no client-side layout logic needed for it at all.
+ * "SEARCH + FILTER URL STATE" section.
+ *
+ * Results render as a single-column list of long, full-width cards
+ * (startup-result-card.tsx); selecting one opens the preview as a
+ * modal overlay (discover-preview-dialog.tsx) rather than a
+ * permanently-visible side panel - full-screen on mobile/tablet, a
+ * large centered panel over a dimmed backdrop on desktop. Selection
+ * state itself (and the optimistic-open/skeleton behavior that comes
+ * with it) is owned by discover-workspace.tsx, a client component -
+ * see its top comment for why that's `useOptimistic`-based rather than
+ * driven directly off these server-fetched props.
  */
 export default async function InvestorDiscoverPage({
   searchParams,
@@ -72,9 +76,9 @@ export default async function InvestorDiscoverPage({
     selectedStartupId ? getDiscoverableStartupById(selectedStartupId) : Promise.resolve(null),
   ]);
 
-  // The query string every card link and the mobile "back" link build
-  // on top of - current filters, without `startup` (each consumer adds
-  // its own).
+  // The query string every card link, the dialog's "back" close
+  // action, and "Clear search and filters" build on top of - current
+  // filters, without `startup` (each consumer adds its own).
   const baseParams = new URLSearchParams();
   if (q) baseParams.set("q", q);
   if (industryId) baseParams.set("industry", industryId);
@@ -84,16 +88,7 @@ export default async function InvestorDiscoverPage({
   const baseQuery = baseParams.toString();
 
   const backHref = `/investor/discover${baseQuery ? `?${baseQuery}` : ""}`;
-  // "Clear search and filters" keeps whatever's selected open, per the
-  // preview pane's own persistence - see discover-preview-panel.tsx.
-  const clearFiltersHref = `/investor/discover${
-    selectedStartupId ? `?startup=${selectedStartupId}` : ""
-  }`;
-
-  // Mobile: exactly one pane full-width at a time. Desktop (`lg:`):
-  // both panes always visible, regardless of selection.
-  const listPaneClass = selectedStartupId ? "hidden lg:block" : "block";
-  const previewPaneClass = selectedStartupId ? "block" : "hidden lg:block";
+  const clearFiltersHref = "/investor/discover";
 
   return (
     <Container className="py-8 sm:py-10">
@@ -110,36 +105,18 @@ export default async function InvestorDiscoverPage({
         current={{ q: q ?? "", industry: industryId, stage: stageId, country, funding }}
       />
 
-      <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-        <div className={listPaneClass}>
-          {startups.length > 0 ? (
-            <StartupResultsGrid
-              // Remount (and so reset accumulated "Load more" pages) any
-              // time the active search/filters change - see
-              // startup-results-grid.tsx's top comment.
-              key={JSON.stringify(filters)}
-              initialStartups={startups}
-              initialHasMore={hasMore}
-              filters={filters}
-              selectedStartupId={selectedStartupId ?? null}
-              baseQuery={baseQuery}
-            />
-          ) : (
-            <DiscoverEmptyState hasActiveFilters={hasActiveFilters} clearHref={clearFiltersHref} />
-          )}
-        </div>
-
-        <div className={previewPaneClass}>
-          {selectedStartupId ? (
-            selectedStartup ? (
-              <DiscoverPreviewPanel startup={selectedStartup} backHref={backHref} />
-            ) : (
-              <DiscoverPreviewEmptyState notFound />
-            )
-          ) : (
-            <DiscoverPreviewEmptyState />
-          )}
-        </div>
+      <div className="mt-6">
+        <DiscoverWorkspace
+          initialStartups={startups}
+          initialHasMore={hasMore}
+          filters={filters}
+          baseQuery={baseQuery}
+          hasActiveFilters={hasActiveFilters}
+          clearFiltersHref={clearFiltersHref}
+          selectedStartupId={selectedStartupId ?? null}
+          selectedStartup={selectedStartup}
+          backHref={backHref}
+        />
       </div>
     </Container>
   );

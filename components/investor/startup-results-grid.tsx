@@ -9,25 +9,36 @@ import type { DiscoverFilters } from "@/lib/queries/discover";
 import type { StartupDetail } from "@/types/startup";
 
 /**
- * The Discover results grid, plus "Load more" pagination. Local `useState`
- * seeded from the server-fetched first page - the parent (page.tsx) remounts
- * this component (via a `key` tied to the active filters) whenever
- * search/filters change, so a fresh filter never has to fight this
- * component's already-loaded pages; see the Sprint 5 brief's "RESULTS
- * LOADING" section for why pagination is client-side here rather than a
- * plain server-rendered list.
+ * The Discover results list (single-column, long horizontal cards -
+ * see startup-result-card.tsx), plus "Load more" pagination. Local
+ * `useState` seeded from the server-fetched first page - the parent
+ * (discover-workspace.tsx) remounts this component (via a `key` tied
+ * to the active filters) whenever search/filters change, so a fresh
+ * filter never has to fight this component's already-loaded pages;
+ * see the Sprint 5 brief's "RESULTS LOADING" section for why
+ * pagination is client-side here rather than a plain server-rendered
+ * list.
+ *
+ * Selection itself isn't owned here - `selectedStartupId` (for
+ * highlighting) and `onSelectStartup` (fired on click) both come from
+ * discover-workspace.tsx, which is what actually opens the preview.
+ * Keeping that state one level up is what lets the preview dialog open
+ * optimistically instead of waiting for this list's own data to catch
+ * up.
  */
 function StartupResultsGrid({
   initialStartups,
   initialHasMore,
   filters,
   selectedStartupId,
+  onSelectStartup,
   baseQuery,
 }: {
   initialStartups: StartupDetail[];
   initialHasMore: boolean;
   filters: DiscoverFilters;
   selectedStartupId: string | null;
+  onSelectStartup: (startupId: string, href: string) => void;
   /** Current search/filter params serialized (no leading `?`, no
    * `startup` param) - each card's link is this plus its own `startup=id`. */
   baseQuery: string;
@@ -56,15 +67,19 @@ function StartupResultsGrid({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
-        {startups.map((startup) => (
-          <StartupResultCard
-            key={startup.id}
-            startup={startup}
-            href={hrefFor(startup.id)}
-            selected={startup.id === selectedStartupId}
-          />
-        ))}
+      <div className="flex flex-col gap-3">
+        {startups.map((startup) => {
+          const href = hrefFor(startup.id);
+          return (
+            <StartupResultCard
+              key={startup.id}
+              startup={startup}
+              href={href}
+              selected={startup.id === selectedStartupId}
+              onSelect={() => onSelectStartup(startup.id, href)}
+            />
+          );
+        })}
       </div>
 
       {hasMore && (
