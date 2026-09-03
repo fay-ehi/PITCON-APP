@@ -8,6 +8,7 @@ import { AddStartupButton } from "@/components/startup/add-startup-button";
 import { StartupCard } from "@/components/startup/startup-card";
 import { StartupEmptyState } from "@/components/startup/startup-empty-state";
 import { MyStartupsDecoration } from "@/components/founder/my-startups-decoration";
+import { FounderProductTour } from "@/components/onboarding/founder-product-tour";
 
 export const metadata: Metadata = {
   title: "My Startups",
@@ -24,6 +25,13 @@ export const metadata: Metadata = {
  * (`getStartupsForFounder`) rather than any single-startup lookup — see
  * the Sprint 4 brief's "MULTI-STARTUP REQUIREMENT" and "DATA FETCHING"
  * sections on avoiding `.single()`/`findUnique`-shaped assumptions here.
+ *
+ * As of Sprint 10, this is also where the first-time product tour
+ * appears - per that brief's "BACKGROUND APPLICATION" section, it's
+ * shown over whatever the founder's actual landing workspace is, which
+ * is this page. `current.profile.product_tour_completed` comes from
+ * the same authenticated profile row already fetched above, so showing
+ * the tour costs no extra query.
  */
 export default async function MyStartupsPage() {
   const current = await getCurrentUserProfile();
@@ -34,6 +42,10 @@ export default async function MyStartupsPage() {
 
   return (
     <Container className="relative py-10 sm:py-12">
+      <FounderProductTour
+        initiallyCompleted={current.profile.product_tour_completed}
+      />
+
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-h2 text-gray-900">My Startups</h1>

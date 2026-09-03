@@ -14,6 +14,7 @@ import { isFundingBucketId } from "@/constants/funding-buckets";
 import { Container } from "@/components/shared/container";
 import { DiscoverControls } from "@/components/investor/discover-controls";
 import { DiscoverWorkspace } from "@/components/investor/discover-workspace";
+import { InvestorProductTour } from "@/components/onboarding/investor-product-tour";
 
 export const metadata: Metadata = {
   title: "Discover",
@@ -56,6 +57,13 @@ type DiscoverSearchParams = {
  * Interest" control renders in the right state on first paint - no
  * loading flash, no client-only guess. Fetched the same way, gated the
  * same way (only when a startup is actually selected).
+ *
+ * As of Sprint 10, this is also where the first-time product tour
+ * appears - per that brief's "BACKGROUND APPLICATION" section, it's
+ * shown over Discover specifically because that's the investor's real
+ * landing workspace. `current.profile.product_tour_completed` comes
+ * from the same authenticated profile row already fetched below, so
+ * showing the tour costs no extra query.
  */
 export default async function InvestorDiscoverPage({
   searchParams,
@@ -103,6 +111,10 @@ export default async function InvestorDiscoverPage({
 
   return (
     <Container className="py-8 sm:py-10">
+      <InvestorProductTour
+        initiallyCompleted={current.profile.product_tour_completed}
+      />
+
       <div className="mb-6">
         <h1 className="text-h2 text-gray-900">Discover Startups</h1>
         <p className="mt-1 text-small text-gray-500">

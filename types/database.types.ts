@@ -17,6 +17,7 @@
  *   - 20260811090000_investor_discovery.sql              (Sprint 5)
  *   - 20260812100000_investor_interest.sql               (Sprint 6)
  *   - 20260813090000_messaging.sql                        (Sprint 7)
+ *   - 20260814090000_product_tour_state.sql               (Sprint 10)
  */
 export type Json =
   | string
@@ -35,6 +36,7 @@ export type Database = {
           full_name: string;
           role: Database["public"]["Enums"]["user_role"];
           avatar_url: string | null;
+          product_tour_completed: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -43,6 +45,7 @@ export type Database = {
           full_name: string;
           role: Database["public"]["Enums"]["user_role"];
           avatar_url?: string | null;
+          product_tour_completed?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -51,6 +54,7 @@ export type Database = {
           full_name?: string;
           role?: Database["public"]["Enums"]["user_role"];
           avatar_url?: string | null;
+          product_tour_completed?: boolean;
           created_at?: string;
           updated_at?: string;
         };
