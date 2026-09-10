@@ -66,6 +66,20 @@
   --color-destructive-foreground: #ffffff;
 
   /* --------------------------------------------------------------------
+     Illustration accents — decorative color for the marketing site's
+     illustration slots and background blobs ONLY. Never use these in
+     application chrome, buttons, inputs, or status/state colors — the
+     doc's restraint around red ("we don't use it simply because we
+     need another accent colour") applies here too, this is scoped
+     specifically to give hand-drawn/illustrated artwork somewhere warm
+     to sit next to PITCON purple, not a second UI accent color.
+     -------------------------------------------------------------------- */
+  --color-illustration-amber-50: #fff7e6;
+  --color-illustration-amber: #f5a623;
+  --color-illustration-coral-50: #ffeeec;
+  --color-illustration-coral: #ff7a6e;
+
+  /* --------------------------------------------------------------------
      Typography — Inter, small deliberate scale.
      Display/H1/H2/H3 use clamp() so they scale fluidly between the
      mobile and desktop values the doc specifies, rather than jumping at

@@ -13,35 +13,37 @@ import { Container } from "@/components/shared/container";
 import { Reveal } from "@/components/marketing/reveal";
 
 /**
- * "Product in action" (Sprint 11 brief section 4). The brief asks to
- * "use the real implemented UI where possible" and to avoid "fake
- * screenshots that don't correspond to the product" - there's no
- * browser available to capture literal screenshots here, so instead
- * every mockup below is built from the same tokens, layout, copy voice,
- * and icon set as the real components it stands in for
- * (FounderSidebar's nav items, DiscoverControls' search+filter row,
- * StartupResultCard, InterestRow, ConversationList/MessageBubble) -
- * same approach as the onboarding tour's UI miniatures
- * (components/onboarding/tour-visuals.tsx), just at landing-page scale.
- * Everything here is inert and `aria-hidden`; the section heading and
- * copy carry the accessible content.
+ * "Take a peek inside" — formerly "See it in action". Retitled casual
+ * per Faith's call, and now also carrying the practical, factual
+ * details that used to live in the separate Founder/Investor benefit
+ * sections (one account/many startups, filters, one-click interest,
+ * messaging unlocking on acceptance) as short captions next to each
+ * mockup, instead of a standalone sales pitch. Mockups themselves are
+ * unchanged stylized stand-ins built from the real design tokens (kept
+ * as-is per Faith's call, not swapped for real screenshots).
  *
- * Composition is asymmetric (a wide Founder Dashboard frame beside a
- * narrower Discover frame, then two staggered accent cards below)
- * rather than a flat screenshot grid, per the brief - done with grid
- * column spans and alternating margins rather than absolute
- * positioning, so it holds together at every width without needing a
- * browser to visually verify.
+ * Decorative color blobs (new `illustration-*` tokens, scoped to
+ * marketing-only) sit behind the mockup grid — kept behind/low-opacity
+ * so they add color without competing with the mockups themselves.
  */
 function ProductShowcase() {
   return (
-    <section className="py-16 sm:py-24">
-      <Container width="wide">
+    <section id="in-action" className="relative overflow-hidden py-16 sm:py-24">
+      <div
+        aria-hidden="true"
+        className="bg-illustration-amber-50 pointer-events-none absolute top-24 -left-16 size-56 rounded-full opacity-70 blur-3xl"
+      />
+      <div
+        aria-hidden="true"
+        className="bg-illustration-coral-50 pointer-events-none absolute -right-16 bottom-10 size-56 rounded-full opacity-70 blur-3xl"
+      />
+
+      <Container width="wide" className="relative">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="text-h1 text-gray-900">See it in action</h2>
+          <h2 className="text-h1 text-gray-900">Take a peek inside</h2>
           <p className="text-body-lg mt-4 text-gray-500">
-            The real PITCON workspace — a founder&apos;s dashboard, an
-            investor&apos;s Discover feed, and the moment they connect.
+            A founder&apos;s dashboard, an investor&apos;s Discover feed, and
+            the moment the two connect.
           </p>
         </Reveal>
 
@@ -50,20 +52,34 @@ function ProductShowcase() {
             <BrowserFrame path="/founder/startups" label="Founder Dashboard">
               <FounderDashboardMockup />
             </BrowserFrame>
+            <p className="text-small mt-3 text-gray-500">
+              One founder account. As many startups as you&apos;re building.
+            </p>
           </Reveal>
           <Reveal delayMs={120} className="lg:col-span-2">
             <BrowserFrame path="/investor/discover" label="Investor Discover">
               <DiscoverMockup />
             </BrowserFrame>
+            <p className="text-small mt-3 text-gray-500">
+              Search and filter by industry, stage, country, and funding —
+              from the moment you sign in.
+            </p>
           </Reveal>
         </div>
 
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
           <Reveal delayMs={220} className="sm:mt-6">
             <InterestMockup />
+            <p className="text-small mt-3 text-gray-500">
+              Investors let you know they&apos;re interested in one click.
+              You decide whether to accept.
+            </p>
           </Reveal>
           <Reveal delayMs={320}>
             <MessagingMockup />
+            <p className="text-small mt-3 text-gray-500">
+              Once you accept, the conversation opens right up.
+            </p>
           </Reveal>
         </div>
       </Container>

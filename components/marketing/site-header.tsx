@@ -7,9 +7,7 @@ import { MobileNav } from "@/components/marketing/mobile-nav";
 
 const NAV_LINKS = [
   { href: "#how-it-works", label: "How it works" },
-  { href: "#for-founders", label: "For Founders" },
-  { href: "#for-investors", label: "For Investors" },
-  { href: "#faq", label: "FAQ" },
+  { href: "#in-action", label: "Take a peek" },
 ];
 
 /**

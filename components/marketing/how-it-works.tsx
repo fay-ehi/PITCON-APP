@@ -9,6 +9,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { Container } from "@/components/shared/container";
 import { Reveal } from "@/components/marketing/reveal";
+import { IllustrationSlot } from "@/components/marketing/illustration-slot";
 
 type JourneyStep = {
   icon: LucideIcon;
@@ -53,26 +54,50 @@ const INVESTOR_STEPS: JourneyStep[] = [
 ];
 
 /**
- * "How PITCON works" (Sprint 11 brief section 3) - the Founder journey
- * (Create → Get Discovered → Connect) and Investor journey (Discover →
- * Express Interest → Connect) as compact icon/card rows rather than a
- * block of text, per the brief's "understandable within a few seconds."
+ * The former "How PITCON works" section, retitled with a casual,
+ * PITCON-specific phrase instead of a generic label.
+ *
+ * Layout: the Founder/Investor journey rows lead the section, followed
+ * by the headline + illustration row (illustration on the left, text
+ * on the right at lg).
+ *
+ * Journey rows render two ways depending on viewport:
+ * - Mobile (<sm): a horizontally-scrollable, snap-to-card carousel.
+ *   Cards are ~85% width so the next card peeks in at the edge as a
+ *   swipe affordance.
+ * - sm and up: unchanged — the original 3-column card grid with
+ *   connecting arrows.
  */
 function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-16 sm:py-24">
+    <section id="how-it-works" className="bg-gray-100 py-16 sm:py-24">
       <Container width="wide">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="text-h1 text-gray-900">How PITCON works</h2>
-          <p className="text-body-lg mt-4 text-gray-500">
-            Two journeys, both built around the same core exchange: real
-            startups, discoverable by the right investors.
-          </p>
-        </Reveal>
-
-        <div className="mt-16 flex flex-col gap-16">
+        <div className="flex flex-col gap-16">
           <JourneyRow eyebrow="For Founders" steps={FOUNDER_STEPS} />
           <JourneyRow eyebrow="For Investors" steps={INVESTOR_STEPS} />
+        </div>
+
+        <div className="mt-16 grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <Reveal className="order-1">
+            <IllustrationSlot
+              className="aspect-[4/3]"
+              src="/images/how-it-works/pitch-connect.png"
+              brief="A founder handing over a glowing pitch/lightbulb to an investor reaching for it — or two people meeting across a bridge/handshake. Warm, flat illustration style. PITCON purple as the lead color, with amber and coral as small accents."
+            />
+          </Reveal>
+
+          <Reveal
+            delayMs={100}
+            className="order-2 text-center lg:text-left"
+          >
+            <h2 className="text-h1 text-gray-900">
+              Pitch it. Get discovered. Connect.
+            </h2>
+            <p className="text-body-lg mt-4 text-gray-500">
+              That&apos;s the whole loop — whichever side of it you&apos;re
+              on.
+            </p>
+          </Reveal>
         </div>
       </Container>
     </section>
@@ -91,7 +116,25 @@ function JourneyRow({
       <p className="text-small text-primary text-center font-semibold sm:text-left">
         {eyebrow}
       </p>
-      <div className="relative mt-5 grid gap-6 sm:grid-cols-3 sm:gap-8">
+
+      {/* Mobile: horizontal snap carousel, edge-to-edge with a peek */}
+      <div
+        className="
+          -mx-4 mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto
+          px-4 pb-2 sm:hidden
+          [-ms-overflow-style:none] [scrollbar-width:none]
+          [&::-webkit-scrollbar]:hidden
+        "
+      >
+        {steps.map((step, index) => (
+          <div key={step.title} className="w-[85%] shrink-0 snap-start">
+            <StepCard step={step} index={index} />
+          </div>
+        ))}
+      </div>
+
+      {/* sm and up: original card grid with connecting arrows — unchanged */}
+      <div className="relative mt-5 hidden gap-6 sm:grid sm:grid-cols-3 sm:gap-8">
         {steps.map((step, index) => (
           <div key={step.title} className="relative">
             <StepCard step={step} index={index} />
@@ -111,7 +154,7 @@ function JourneyRow({
 function StepCard({ step, index }: { step: JourneyStep; index: number }) {
   const Icon = step.icon;
   return (
-    <div className="border-border rounded-card flex flex-col items-start gap-3 border bg-white p-6">
+    <div className="border-border rounded-card flex h-full flex-col items-start gap-3 border bg-white p-6">
       <div className="flex items-center gap-3">
         <span className="bg-primary-50 text-primary rounded-control flex size-10 shrink-0 items-center justify-center">
           <Icon className="size-5" aria-hidden />
