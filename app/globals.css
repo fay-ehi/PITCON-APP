@@ -197,6 +197,17 @@
 
   html {
     -webkit-text-size-adjust: 100%;
+    /* Smooth in-page jumps for the landing page's nav anchor links
+       (#how-it-works, #for-founders, etc.) - harmless everywhere else
+       since nothing outside the marketing page currently links to an
+       in-page anchor. */
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 
   body {
@@ -243,5 +254,66 @@
   }
   50% {
     transform: translateY(-6px);
+  }
+}
+
+/* ==========================================================================
+   Landing page — hero collage + entrance motion
+   ==========================================================================
+   Two more float speeds (same shape as float-slow above, just different
+   duration/amplitude) so the hero's several floating fragments don't all
+   bob in lockstep - see components/marketing/hero-visual.tsx. Plus a
+   one-shot "draw the connecting line" effect for the same SVG.
+
+   Same "gated behind prefers-reduced-motion: no-preference, not
+   motion-safe:" reasoning as float-slow: with reduced motion requested,
+   every element below keeps its final resting state (opacity 1, no
+   transform, fully-drawn line) with no animation-related class doing
+   anything at all, rather than a paused/instant version of the
+   animation. Entrance motion for the hero's HTML fragments themselves
+   uses the codebase's existing `animate-in ... motion-reduce:animate-none`
+   idiom (see components/onboarding/tour-visuals.tsx) instead of a new
+   mechanism - only the two continuous loops and the line-draw below are
+   things that idiom doesn't already cover.
+   ========================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  .animate-float-medium {
+    animation: float-medium 7.5s ease-in-out infinite;
+  }
+
+  .animate-float-fast {
+    animation: float-fast 5.5s ease-in-out infinite;
+  }
+
+  .animate-draw-line {
+    stroke-dasharray: 240;
+    stroke-dashoffset: 240;
+    animation: draw-line 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+  }
+}
+
+@keyframes float-medium {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-10px) translateX(3px);
+  }
+}
+
+@keyframes float-fast {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes draw-line {
+  to {
+    stroke-dashoffset: 0;
   }
 }

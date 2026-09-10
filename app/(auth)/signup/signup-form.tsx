@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import {
   signUpAccountDetailsSchema,
   signUpSchema,
+  type Role,
   type SignUpInput,
 } from "@/lib/validations/auth";
 import { signUpAction } from "@/app/(auth)/signup/actions";
@@ -26,7 +27,12 @@ const ACCOUNT_DETAILS_FIELDS = [
   "confirmPassword",
 ] as const;
 
-function SignUpForm() {
+/** `initialRole` comes from the landing page's role-specific CTAs (see
+ * app/(auth)/signup/page.tsx) - purely a default for step 2's radio
+ * group, so a visitor who arrived via "I'm an Investor" doesn't have to
+ * state their account type twice. Omitted (undefined) reproduces the
+ * exact pre-existing behavior for every other entry point into signup. */
+function SignUpForm({ initialRole }: { initialRole?: Role }) {
   const router = useRouter();
   const [step, setStep] = React.useState<1 | 2>(1);
   const [showPassword, setShowPassword] = React.useState(false);
@@ -40,7 +46,7 @@ function SignUpForm() {
       email: "",
       password: "",
       confirmPassword: "",
-      role: undefined,
+      role: initialRole,
     },
     mode: "onBlur",
   });
