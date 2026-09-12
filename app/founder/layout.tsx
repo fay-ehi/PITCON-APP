@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import * as Sentry from "@sentry/nextjs";
 
 import { getCurrentUserProfile, roleHomePath } from "@/lib/auth/session";
 import { getUnreadNotificationCount } from "@/lib/queries/notifications";
@@ -41,6 +42,11 @@ export default async function FounderLayout({
   if (current.profile.role !== "founder") {
     redirect(roleHomePath(current.profile.role));
   }
+
+  // Added in the pre-launch hardening pass - lets a Sentry event be
+  // traced back to an account without attaching anything more (no
+  // email, no IP - see sendDefaultPii: false in instrumentation-client.ts).
+  Sentry.setUser({ id: current.userId });
 
   const [unreadNotificationCount, unreadMessageCount] = await Promise.all([
     getUnreadNotificationCount(current.userId),

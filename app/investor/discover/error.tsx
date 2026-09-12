@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { AlertCircle } from "lucide-react";
 
+import { reportError } from "@/lib/error-reporting";
 import { Container } from "@/components/shared/container";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ export default function DiscoverError({
 }) {
   useEffect(() => {
     // Logged for diagnostics only - never rendered to the investor.
-    console.error(error);
+    reportError(error);
   }, [error]);
 
   return (

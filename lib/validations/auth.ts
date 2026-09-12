@@ -1,6 +1,24 @@
 import { z } from "zod";
 
 /**
+ * Bug fix, pre-launch hardening pass: `z.email().trim().toLowerCase()`
+ * validates the email *format* before either transform runs, so an
+ * address with stray leading/trailing whitespace (easy to pick up from
+ * a copy-paste) failed with "Enter a valid email address" instead of
+ * being normalized - caught by lib/validations/auth.test.ts. `.pipe()`
+ * runs the string transform first and only feeds the trimmed,
+ * lowercased result into the format check, which is what every caller
+ * here actually wants. Shared across every form since the same fix
+ * applied three times independently is the kind of thing that quietly
+ * drifts back out of sync.
+ */
+export const emailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .pipe(z.email("Enter a valid email address."));
+
+/**
  * Password policy. Kept in sync with `supabase/config.toml`'s
  * `[auth.email] minimum_password_length` (8) and `password_requirements`
  * ("letters_digits"): if either changes, update both.
@@ -28,7 +46,7 @@ const signUpObjectSchema = z.object({
     .trim()
     .min(2, "Enter your full name.")
     .max(100, "Full name is too long."),
-  email: z.email("Enter a valid email address.").trim().toLowerCase(),
+  email: emailSchema,
   password: passwordSchema,
   confirmPassword: z.string(),
   role: roleSchema,
@@ -62,13 +80,13 @@ export const signUpAccountDetailsSchema = signUpObjectSchema
   .refine(passwordsMatch, passwordsMatchRefinement);
 
 export const loginSchema = z.object({
-  email: z.email("Enter a valid email address.").trim().toLowerCase(),
+  email: emailSchema,
   password: z.string().min(1, "Enter your password."),
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
 export const forgotPasswordSchema = z.object({
-  email: z.email("Enter a valid email address.").trim().toLowerCase(),
+  email: emailSchema,
 });
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 

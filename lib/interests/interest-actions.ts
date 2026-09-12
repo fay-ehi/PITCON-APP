@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
+import { sendInterestReceivedEmail } from "@/lib/email/notifications";
 import type { InterestStatus } from "@/types/interest";
 
 /** Postgres's code for a unique-constraint violation - specifically
@@ -76,6 +78,39 @@ export async function expressInterestAction(startupId: string): Promise<ExpressI
   // only matters for a second tab / a later visit.
   revalidatePath("/investor/discover");
   revalidatePath("/investor/interests");
+
+  // Email notification, added in the pre-launch hardening pass. The
+  // in-app `interest_received` notification row for this already gets
+  // created by the Sprint 6 migration's own database trigger
+  // (`create_notification_for_new_interest()`) inside the same INSERT -
+  // this is deliberately *not* hooked in there via a Supabase database
+  // webhook, even though that would keep "when does this fire" in one
+  // place: a webhook needs project-level configuration (the Database
+  // Webhooks feature, or pg_net + a stored Resend key) that lives
+  // outside this codebase and can't be reviewed or tested as a normal
+  // code change. Calling it here instead means it's just another
+  // best-effort step in the same action - visible in a diff, easy to
+  // unit test, and `sendInterestReceivedEmail` never throws, so a
+  // flaky email provider can't turn a successful interest into a
+  // failed one.
+  //
+  // `after()` runs this once the response has already been sent, so the
+  // investor isn't waiting on an external API call for something that
+  // only affects the founder's inbox.
+  const [{ data: startup }, { data: ownProfile }] = await Promise.all([
+    supabase.from("startups").select("name, founder_id").eq("id", startupId).maybeSingle(),
+    supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
+  ]);
+
+  if (startup) {
+    after(() =>
+      sendInterestReceivedEmail({
+        founderId: startup.founder_id,
+        investorName: ownProfile?.full_name ?? "An investor",
+        startupName: startup.name,
+      }),
+    );
+  }
 
   return { success: true, interestId: data.id };
 }

@@ -1,15 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+import { fetchWithTimeout } from "@/lib/supabase/fetch-with-timeout";
+
 /**
  * Next.js 16 renamed `middleware.ts` -> `proxy.ts` (exported function must
  * be named `proxy`). This runs on every request matched below.
  *
- * Sprint 0 scope: refresh the Supabase auth session/cookies only. It does
- * NOT redirect unauthenticated users — there are no protected routes yet.
- * Route protection (redirect signed-out users away from founder/investor
- * areas, redirect signed-in users away from auth pages) belongs to the
- * Authentication sprint and should be added inside this function then.
+ * Two responsibilities: refresh the Supabase auth session/cookies on
+ * every request, and redirect signed-out visitors away from every
+ * `/founder` and `/investor` route (see "Route protection" below). It
+ * does NOT redirect signed-in users away from auth pages — that's each
+ * auth page's own `getCurrentUserProfile()` + `roleHomePath()` check
+ * (see app/(auth)/login/page.tsx and friends), and it does NOT check
+ * founder-vs-investor role - see the note on that below.
  */
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -32,6 +36,11 @@ export async function proxy(request: NextRequest) {
           );
         },
       },
+      // Bounds each auth fetch to 5s. Without this, an unreachable
+      // Supabase URL (local stack not started, project paused, network
+      // blocked) makes every single route stall for 25s+ while GoTrueClient
+      // retries the failing fetch — see lib/supabase/fetch-with-timeout.ts.
+      global: { fetch: fetchWithTimeout(5000) },
     },
   );
 

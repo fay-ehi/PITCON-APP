@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { getMessagesPage } from "@/lib/queries/messages";
 import { messageContentSchema } from "@/lib/validations/message";
+import { sendNewMessageEmail } from "@/lib/email/notifications";
 import type { MessageSummary } from "@/types/message";
 
 export type SendMessageResult =
@@ -65,6 +67,42 @@ export async function sendMessageAction(
   // own return value instead (see ConversationThread), not from this.
   revalidatePath("/founder/messages");
   revalidatePath("/investor/messages");
+
+  // Email notification, added in the pre-launch hardening pass. Unlike
+  // interests, there's no in-app `notifications` row for a new message
+  // at all yet - the Sprint 6 migration scoped that table to interest
+  // events only (see its own comment: "nothing beyond Interest events
+  // is implemented here") - so for now this email is the only
+  // out-of-band signal either side gets. `sendNewMessageEmail` never
+  // throws, and `after()` defers it past the response the same way
+  // `expressInterestAction` does.
+  const { data: conversation } = await supabase
+    .from("conversations")
+    .select("startup_id, investor_id")
+    .eq("id", conversationId)
+    .maybeSingle();
+
+  if (conversation) {
+    const [{ data: startup }, { data: ownProfile }] = await Promise.all([
+      supabase.from("startups").select("name, founder_id").eq("id", conversation.startup_id).maybeSingle(),
+      supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
+    ]);
+
+    if (startup) {
+      const senderIsInvestor = user.id === conversation.investor_id;
+      const recipientId = senderIsInvestor ? startup.founder_id : conversation.investor_id;
+
+      after(() =>
+        sendNewMessageEmail({
+          recipientId,
+          recipientRole: senderIsInvestor ? "founder" : "investor",
+          senderName: ownProfile?.full_name ?? "Someone",
+          startupName: startup.name,
+          messagePreview: parsed.data,
+        }),
+      );
+    }
+  }
 
   return {
     success: true,

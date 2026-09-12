@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
 import type { Database } from "@/types/database.types";
+import { fetchWithTimeout } from "@/lib/supabase/fetch-with-timeout";
 
 /**
  * Supabase client for use in Server Components, Server Actions, and
@@ -34,6 +35,10 @@ export async function createClient() {
           }
         },
       },
+      // See lib/supabase/fetch-with-timeout.ts — bounds each auth/DB
+      // fetch so an unreachable Supabase URL fails fast instead of
+      // hanging the request for the length of GoTrueClient's retries.
+      global: { fetch: fetchWithTimeout(5000) },
     },
   );
 }
