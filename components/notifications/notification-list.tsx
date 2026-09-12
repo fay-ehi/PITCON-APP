@@ -29,7 +29,7 @@ function NotificationList({ notifications }: { notifications: NotificationSummar
           <Link
             href={notification.linkPath}
             className={cn(
-              "flex items-start gap-3 rounded-card border border-border p-4 transition-colors hover:border-gray-300 hover:bg-gray-50",
+              "shadow-subtle hover:shadow-medium flex items-start gap-3 rounded-card bg-white p-4 transition-shadow duration-200",
               !notification.isRead && "bg-primary-50/40",
             )}
           >

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Building2, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import {
 import { StartupStatusBadge } from "@/components/startup/startup-status-badge";
 import { getMissingPublishFields } from "@/lib/startup/completion";
 import { deleteStartupAction } from "@/lib/startup/startup-actions";
+import { getIndustryAccent } from "@/lib/startup/industry-accent";
 import type { StartupDetail } from "@/types/startup";
 
 /**
@@ -50,6 +51,8 @@ function StartupCard({ startup }: { startup: StartupDetail }) {
   const displayName = startup.name || "Untitled startup";
   const viewHref = `/founder/startups/${startup.id}`;
   const editHref = `/founder/startups/${startup.id}/edit`;
+  const accent = getIndustryAccent(startup.industry?.slug);
+  const Icon = accent.icon;
 
   async function handleDelete() {
     setIsDeleting(true);
@@ -68,8 +71,13 @@ function StartupCard({ startup }: { startup: StartupDetail }) {
 
   return (
     <>
-      <Card className="relative gap-3 p-5">
-        <div className="absolute top-3 right-3">
+      <Card className="hover:shadow-medium relative gap-3 overflow-hidden p-5 pt-6 transition-shadow duration-200">
+        <div
+          aria-hidden
+          className={`absolute top-0 left-0 h-1.5 w-full ${accent.solidBg}`}
+        />
+
+        <div className="absolute top-4 right-3">
           <DropdownMenu>
             <DropdownMenuTrigger className="rounded-control focus-visible:ring-primary/30 flex size-8 items-center justify-center text-gray-400 transition-colors outline-none hover:bg-gray-100 hover:text-gray-700 focus-visible:ring-2">
               <MoreVertical className="size-4" aria-hidden />
@@ -92,7 +100,9 @@ function StartupCard({ startup }: { startup: StartupDetail }) {
         </div>
 
         <div className="flex items-center gap-3 pr-8">
-          <div className="border-border rounded-card flex size-12 shrink-0 items-center justify-center overflow-hidden border bg-gray-100">
+          <div
+            className={`rounded-card flex size-12 shrink-0 items-center justify-center overflow-hidden ${accent.solidBg}`}
+          >
             {startup.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element -- Supabase Storage public URL, not a local/optimizable asset.
               <img
@@ -101,7 +111,7 @@ function StartupCard({ startup }: { startup: StartupDetail }) {
                 className="size-full object-cover"
               />
             ) : (
-              <Building2 className="size-5 text-gray-300" aria-hidden />
+              <Icon className={`size-5 ${accent.solidText}`} aria-hidden />
             )}
           </div>
           <div className="min-w-0">
@@ -117,11 +127,20 @@ function StartupCard({ startup }: { startup: StartupDetail }) {
         </div>
 
         {(startup.industry || startup.stage) && (
-          <p className="text-caption text-gray-500">
-            {[startup.industry?.name, startup.stage?.name]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            {startup.industry && (
+              <span
+                className={`text-caption inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-medium ${accent.softBg} ${accent.softText}`}
+              >
+                {startup.industry.name}
+              </span>
+            )}
+            {startup.stage && (
+              <span className="text-caption text-gray-400">
+                {startup.stage.name}
+              </span>
+            )}
+          </div>
         )}
 
         <StartupStatusBadge status={startup.status} />

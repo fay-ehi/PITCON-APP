@@ -80,6 +80,41 @@
   --color-illustration-coral: #ff7a6e;
 
   /* --------------------------------------------------------------------
+     Category accents — functional colour, used throughout the actual
+     product (industry chips, logo badges, card accent bars) to break
+     up what was an entirely monochrome application UI. Six evenly-toned
+     hues so any of the 17 seeded industries lands on one, assigned
+     deterministically by lib/startup/industry-accent.ts rather than
+     stored per-row. Amber and coral reuse the same hex values as the
+     illustration accents above for one consistent brand palette, but
+     these tokens are the ones app components should reach for - the
+     illustration-* tokens above stay reserved for marketing artwork.
+     -------------------------------------------------------------------- */
+  --color-accent-violet: var(--color-primary-500);
+  --color-accent-violet-soft: var(--color-primary-50);
+  --color-accent-violet-soft-fg: var(--color-primary-700);
+
+  --color-accent-amber: var(--color-illustration-amber);
+  --color-accent-amber-soft: var(--color-illustration-amber-50);
+  --color-accent-amber-soft-fg: #8a5200;
+
+  --color-accent-coral: var(--color-illustration-coral);
+  --color-accent-coral-soft: var(--color-illustration-coral-50);
+  --color-accent-coral-soft-fg: #a6321f;
+
+  --color-accent-teal: #1f9e8b;
+  --color-accent-teal-soft: #e6f7f4;
+  --color-accent-teal-soft-fg: #0f5a4e;
+
+  --color-accent-blue: #3b82c4;
+  --color-accent-blue-soft: #eaf3fb;
+  --color-accent-blue-soft-fg: #1e4e73;
+
+  --color-accent-rose: #d6558c;
+  --color-accent-rose-soft: #fdeff4;
+  --color-accent-rose-soft-fg: #7a2f4e;
+
+  /* --------------------------------------------------------------------
      Typography — Inter, small deliberate scale.
      Display/H1/H2/H3 use clamp() so they scale fluidly between the
      mobile and desktop values the doc specifies, rather than jumping at
@@ -130,9 +165,9 @@
   /* --------------------------------------------------------------------
      Shadows — very restrained; most app cards use none at all.
      -------------------------------------------------------------------- */
-  --shadow-subtle: 0 1px 2px rgb(0 0 0 / 0.04), 0 1px 1px rgb(0 0 0 / 0.03);
-  --shadow-medium: 0 4px 12px rgb(0 0 0 / 0.08), 0 2px 4px rgb(0 0 0 / 0.04);
-  --shadow-strong: 0 12px 32px rgb(0 0 0 / 0.12), 0 4px 8px rgb(0 0 0 / 0.06);
+  --shadow-subtle: 0 1px 3px rgb(23 17 34 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-medium: 0 10px 24px rgb(118 52 200 / 0.12), 0 2px 6px rgb(0 0 0 / 0.05);
+  --shadow-strong: 0 20px 45px rgb(0 0 0 / 0.16), 0 6px 12px rgb(0 0 0 / 0.08);
 
   /* --------------------------------------------------------------------
      Content width — application content vs. wider marketing sections.

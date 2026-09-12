@@ -3,47 +3,68 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
- * Investor profile view's loading state - added in the pre-launch
- * hardening pass. Mirrors ProfileHeader + the Professional
- * information/Links/Investment preferences cards below it.
+ * Investor profile view's loading state - mirrors the current page
+ * shape: the gradient ProfileHeader hero, then "At a glance" on the
+ * left and "About" / "Investment preferences" on the right.
  */
 export default function InvestorProfileLoading() {
   return (
-    <Container className="max-w-2xl py-12">
-      <div className="flex items-center gap-4">
-        <Skeleton className="size-16 rounded-full" />
-        <div className="flex flex-col gap-2">
-          <Skeleton className="h-5 w-40" />
-          <Skeleton className="h-3.5 w-28" />
-        </div>
-      </div>
+    <Container className="max-w-4xl py-10 sm:py-12">
+      <Skeleton className="h-36 w-full rounded-2xl sm:h-32" />
 
-      <div className="mt-8 flex flex-col gap-4">
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-4 w-48" />
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="flex flex-col gap-1.5">
-                <Skeleton className="h-3 w-20" />
-                <Skeleton className="h-4 w-32" />
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="flex flex-col gap-6 lg:col-span-1">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-4 w-28" />
+            </CardHeader>
+            <CardContent className="flex flex-col gap-5">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <Skeleton className="size-9 shrink-0 rounded-full" />
+                  <div className="flex flex-1 flex-col gap-1.5">
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-4 w-28" />
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-4 w-16" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-20 w-full" />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-4 w-40" />
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-3 w-16" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-7 w-20 rounded-pill" />
+                  <Skeleton className="h-7 w-24 rounded-pill" />
+                  <Skeleton className="h-7 w-16 rounded-pill" />
+                </div>
               </div>
-            ))}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-4 w-40" />
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            <Skeleton className="h-3 w-20" />
-            <div className="flex gap-2">
-              <Skeleton className="h-6 w-20 rounded-pill" />
-              <Skeleton className="h-6 w-24 rounded-pill" />
-            </div>
-          </CardContent>
-        </Card>
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-3 w-24" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-7 w-20 rounded-pill" />
+                  <Skeleton className="h-7 w-16 rounded-pill" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </Container>
   );

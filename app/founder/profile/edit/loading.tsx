@@ -2,15 +2,18 @@ import { Container } from "@/components/shared/container";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
- * Edit founder profile's loading state - added in the pre-launch
- * hardening pass. Mirrors FounderProfileForm's field stack.
+ * Edit founder profile's loading state - mirrors the page's back-link
+ * header plus FounderProfileForm's field stack.
  */
 export default function EditFounderProfileLoading() {
   return (
-    <Container className="max-w-2xl py-12">
-      <div className="mb-8 flex flex-col gap-2">
-        <Skeleton className="h-6 w-32" />
-        <Skeleton className="h-4 w-full max-w-sm" />
+    <Container className="max-w-3xl py-10 sm:py-12">
+      <div className="mb-8 flex items-center gap-3">
+        <Skeleton className="size-9 shrink-0 rounded-full" />
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-3.5 w-64" />
+        </div>
       </div>
 
       <div className="flex flex-col gap-5">

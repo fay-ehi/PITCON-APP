@@ -21,15 +21,15 @@ function InterestCard({ interest }: { interest: InvestorInterestSummary }) {
   return (
     <Link
       href={`/investor/discover?startup=${interest.startup.id}`}
-      className="rounded-card border-border focus-visible:ring-primary/30 flex flex-col gap-3 border bg-white p-5 outline-none transition-colors hover:border-gray-300 hover:bg-gray-50 focus-visible:ring-2"
+      className="rounded-card shadow-subtle hover:shadow-medium focus-visible:ring-primary/30 flex flex-col gap-3 bg-white p-5 outline-none transition-shadow duration-200 focus-visible:ring-2"
     >
       <div className="flex items-center gap-3">
-        <div className="rounded-card border-border flex size-12 shrink-0 items-center justify-center overflow-hidden border bg-gray-100">
+        <div className="rounded-card bg-primary-50 flex size-12 shrink-0 items-center justify-center overflow-hidden">
           {interest.startup.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- Supabase Storage public URL.
             <img src={interest.startup.logoUrl} alt="" className="size-full object-cover" />
           ) : (
-            <Building2 className="size-5 text-gray-300" aria-hidden />
+            <Building2 className="text-primary size-5" aria-hidden />
           )}
         </div>
         <div className="min-w-0 flex-1">

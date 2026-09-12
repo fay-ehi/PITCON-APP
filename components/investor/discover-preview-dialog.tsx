@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import {
   ArrowLeft,
-  Building2,
   ExternalLink,
   FileText,
   Globe,
@@ -18,6 +17,7 @@ import { ProfileField } from "@/components/profile/profile-field";
 import { ExpressInterestButton } from "@/components/investor/express-interest-button";
 import { getDiscoverPitchDeckUrlAction } from "@/lib/discover/discover-actions";
 import { formatCount, formatLocation, formatUsd } from "@/lib/startup/format";
+import { getIndustryAccent } from "@/lib/startup/industry-accent";
 import type { StartupDetail } from "@/types/startup";
 import type { InterestStatus } from "@/types/interest";
 
@@ -162,6 +162,8 @@ function PreviewContent({
 }) {
   const location = formatLocation(startup.city, startup.country);
   const hasLinks = Boolean(startup.linkedinUrl || startup.twitterUrl || startup.instagramUrl);
+  const accent = getIndustryAccent(startup.industry?.slug);
+  const Icon = accent.icon;
 
   return (
     <div className="flex flex-col gap-8">
@@ -174,23 +176,28 @@ function PreviewContent({
 
       <div className="flex flex-col gap-4">
         <div className="flex items-start gap-4">
-          <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-card border border-border bg-gray-100">
+          <div className={`flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-card ${accent.solidBg}`}>
             {startup.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={startup.logoUrl} alt="" className="size-full object-cover" />
             ) : (
-              <Building2 className="size-6 text-gray-300" aria-hidden />
+              <Icon className={`size-6 ${accent.solidText}`} aria-hidden />
             )}
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-h3 font-semibold text-gray-900">{startup.name}</h2>
             {startup.tagline && <p className="text-small text-gray-500">{startup.tagline}</p>}
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-gray-500">
-              {startup.industry && <span>{startup.industry.name}</span>}
-              {startup.industry && startup.stage && <span aria-hidden>&middot;</span>}
-              {startup.stage && <span>{startup.stage.name}</span>}
-              {(startup.industry || startup.stage) && location && <span aria-hidden>&middot;</span>}
-              {location && <span>{location}</span>}
+            <div className="flex flex-wrap items-center gap-2 pt-0.5">
+              {startup.industry && (
+                <span className={`text-caption inline-flex items-center rounded-full px-2 py-0.5 font-medium ${accent.softBg} ${accent.softText}`}>
+                  {startup.industry.name}
+                </span>
+              )}
+              <span className="text-caption flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-500">
+                {startup.stage && <span>{startup.stage.name}</span>}
+                {startup.stage && location && <span aria-hidden>&middot;</span>}
+                {location && <span>{location}</span>}
+              </span>
             </div>
           </div>
         </div>

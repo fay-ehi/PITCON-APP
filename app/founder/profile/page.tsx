@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Briefcase, Globe, MapPin, Rocket } from "lucide-react";
 
 import { getCurrentUserProfile } from "@/lib/auth/session";
 import { getFounderProfileDetail } from "@/lib/queries/profile";
@@ -10,7 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { ProfileField } from "@/components/profile/profile-field";
-import { ProfileCompletionBar } from "@/components/profile/profile-completion-bar";
 
 export const metadata: Metadata = {
   title: "Your Profile",
@@ -32,72 +32,74 @@ export default async function FounderProfilePage() {
   });
 
   return (
-    <Container className="max-w-2xl py-12">
-      <div className="flex items-start justify-between gap-4">
-        <ProfileHeader
-          name={profile.fullName}
-          avatarUrl={profile.avatarUrl}
-          subtitle={profile.jobTitle}
-        />
-        <Button asChild variant="secondary" size="sm" className="shrink-0">
-          <Link href="/founder/profile/edit">Edit profile</Link>
-        </Button>
-      </div>
+    <Container className="max-w-4xl py-10 sm:py-12">
+      <ProfileHeader
+        name={profile.fullName}
+        avatarUrl={profile.avatarUrl}
+        subtitle={profile.jobTitle}
+        roleLabel="Founder"
+        editHref="/founder/profile/edit"
+        completion={completion}
+      />
 
-      {completion < 100 && (
-        <ProfileCompletionBar percentage={completion} className="mt-6" />
-      )}
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="flex flex-col gap-6 lg:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle>At a glance</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-5">
+              <ProfileField icon={Briefcase} label="Job title" value={profile.jobTitle} />
+              <ProfileField icon={MapPin} label="Country" value={profile.country} />
+              <ProfileField
+                icon={Globe}
+                label="LinkedIn / Website / Portfolio"
+                value={
+                  profile.websiteUrl ? (
+                    <a
+                      href={profile.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      {profile.websiteUrl}
+                    </a>
+                  ) : null
+                }
+              />
+            </CardContent>
+          </Card>
 
-      <div className="mt-8 flex flex-col gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Professional information</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <ProfileField label="Job title" value={profile.jobTitle} />
-            <ProfileField label="Country" value={profile.country} />
-            <ProfileField
-              label="Bio"
-              value={profile.bio}
-              className="sm:col-span-2"
-            />
-          </CardContent>
-        </Card>
+          <Card className="relative overflow-hidden">
+            <div aria-hidden className="bg-accent-amber absolute top-0 left-0 h-1.5 w-full" />
+            <CardContent className="flex flex-col items-start gap-3 pt-1">
+              <span className="bg-accent-amber-soft flex size-11 items-center justify-center rounded-full">
+                <Rocket className="text-accent-amber-soft-fg size-5" aria-hidden />
+              </span>
+              <div>
+                <p className="text-body font-semibold text-gray-900">Your startup</p>
+                <p className="text-small mt-0.5 text-gray-500">
+                  This page is your personal identity, separate from the business
+                  you&apos;re building.
+                </p>
+              </div>
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/founder/startups">Go to My Startups</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Links</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ProfileField
-              label="LinkedIn / Website / Portfolio"
-              value={
-                profile.websiteUrl ? (
-                  <a
-                    href={profile.websiteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    {profile.websiteUrl}
-                  </a>
-                ) : null
-              }
-            />
-          </CardContent>
-        </Card>
-
-        <Card className="border-dashed bg-gray-50">
-          <CardContent className="text-small flex items-center justify-between gap-4 text-gray-500">
-            <span>
-              This page is your personal founder identity, separate from the
-              business you&apos;re building.
-            </span>
-            <Button asChild variant="secondary" size="sm" className="shrink-0">
-              <Link href="/founder/startups">My Startups</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>About</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProfileField label="Bio" value={profile.bio} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </Container>
   );

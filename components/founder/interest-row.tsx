@@ -32,7 +32,7 @@ function InterestRow({ interest }: { interest: FounderInterestSummary }) {
         type="button"
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
-        className="rounded-card border-border focus-visible:ring-primary/30 flex w-full flex-wrap items-center gap-4 border bg-white p-5 text-left transition-colors outline-none hover:border-gray-300 hover:bg-gray-50 focus-visible:ring-2 sm:flex-nowrap"
+        className="rounded-card shadow-subtle hover:shadow-medium focus-visible:ring-primary/30 flex w-full flex-wrap items-center gap-4 bg-white p-5 text-left outline-none transition-shadow duration-200 focus-visible:ring-2 sm:flex-nowrap"
       >
         <Avatar className="size-11 shrink-0">
           <AvatarImage src={interest.investor.avatarUrl ?? undefined} alt="" />

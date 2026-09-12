@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Landmark, Layers, Loader2, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -111,7 +111,12 @@ function InvestorPreferencesForm({
     <form onSubmit={handleSubmit}>
       <Card>
         <CardHeader>
-          <CardTitle>Investment preferences</CardTitle>
+          <div className="flex items-center gap-2.5">
+            <span className="bg-primary-50 flex size-8 items-center justify-center rounded-full">
+              <Landmark className="text-primary size-4" aria-hidden />
+            </span>
+            <CardTitle>Investment preferences</CardTitle>
+          </div>
           <CardDescription>
             Optional, but helps investors show up in the right place once
             Discover ships.
@@ -119,11 +124,15 @@ function InvestorPreferencesForm({
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <div className="space-y-2">
-            <Label>Industries</Label>
+            <Label className="flex items-center gap-1.5">
+              <Layers className="size-3.5 text-gray-400" aria-hidden />
+              Industries
+            </Label>
             <ChipMultiSelect
               options={industries}
               value={industryIds}
               onChange={setIndustryIds}
+              colorize
               aria-label="Preferred industries"
             />
           </div>
@@ -140,7 +149,10 @@ function InvestorPreferencesForm({
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="fundingRangeMin">Minimum investment (USD)</Label>
+              <Label htmlFor="fundingRangeMin" className="flex items-center gap-1.5">
+                <Wallet className="size-3.5 text-gray-400" aria-hidden />
+                Minimum investment (USD)
+              </Label>
               <Input
                 id="fundingRangeMin"
                 type="number"
@@ -152,7 +164,10 @@ function InvestorPreferencesForm({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fundingRangeMax">Maximum investment (USD)</Label>
+              <Label htmlFor="fundingRangeMax" className="flex items-center gap-1.5">
+                <Wallet className="size-3.5 text-gray-400" aria-hidden />
+                Maximum investment (USD)
+              </Label>
               <Input
                 id="fundingRangeMax"
                 type="number"

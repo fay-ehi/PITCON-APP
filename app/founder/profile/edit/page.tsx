@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 import { getCurrentUserProfile } from "@/lib/auth/session";
 import { getFounderProfileDetail } from "@/lib/queries/profile";
@@ -19,20 +20,19 @@ export default async function EditFounderProfilePage() {
   if (!profile) redirect("/founder/startups");
 
   return (
-    <Container className="max-w-2xl py-12">
-      <div className="mb-8">
-        <h1 className="text-h3 text-gray-900">Edit profile</h1>
-        <p className="text-small mt-2 text-gray-500">
-          This is your professional identity as a founder - not your startups,
-          which each have{" "}
-          <Link
-            href="/founder/startups"
-            className="text-primary hover:underline"
-          >
-            their own profile
-          </Link>
-          .
-        </p>
+    <Container className="max-w-3xl py-10 sm:py-12">
+      <div className="mb-8 flex items-center gap-3">
+        <Link
+          href="/founder/profile"
+          aria-label="Back to profile"
+          className="bg-primary-50 text-primary hover:bg-primary-100 flex size-9 shrink-0 items-center justify-center rounded-full transition-colors"
+        >
+          <ArrowLeft className="size-4" aria-hidden />
+        </Link>
+        <div>
+          <h1 className="text-h4 text-gray-900">Back to profile</h1>
+          
+        </div>
       </div>
       <FounderProfileForm profile={profile} />
     </Container>

@@ -17,7 +17,7 @@ export function RecentSignupsList({ signups }: { signups: RecentSignup[] }) {
       {signups.map((signup) => (
         <div
           key={signup.id}
-          className="flex items-center justify-between gap-4 rounded-card border border-border bg-white p-4"
+          className="flex items-center justify-between gap-4 rounded-card shadow-subtle bg-white p-4"
         >
           <div className="min-w-0">
             <p className="truncate text-small font-medium text-gray-900">{signup.fullName}</p>

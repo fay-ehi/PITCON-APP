@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { Building2, ExternalLink, FileText, Globe } from "lucide-react";
+import { ExternalLink, FileText, Globe } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProfileField } from "@/components/profile/profile-field";
 import { formatCount, formatLocation, formatUsd } from "@/lib/startup/format";
+import { getIndustryAccent } from "@/lib/startup/industry-accent";
 import type { StartupDetail } from "@/types/startup";
 
 /**
@@ -25,6 +26,8 @@ function StartupPreview({
   pitchDeckUrl: string | null;
 }) {
   const location = formatLocation(startup.city, startup.country);
+  const accent = getIndustryAccent(startup.industry?.slug);
+  const Icon = accent.icon;
 
   return (
     <div className="flex flex-col gap-6">
@@ -42,7 +45,7 @@ function StartupPreview({
           )}
 
           <div className="flex items-start gap-4">
-            <div className="rounded-card bg-gray-100 border-border flex size-16 shrink-0 items-center justify-center overflow-hidden border">
+            <div className={`rounded-card flex size-16 shrink-0 items-center justify-center overflow-hidden ${accent.solidBg}`}>
               {startup.logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -51,7 +54,7 @@ function StartupPreview({
                   className="size-full object-cover"
                 />
               ) : (
-                <Building2 className="size-6 text-gray-300" aria-hidden />
+                <Icon className={`size-6 ${accent.solidText}`} aria-hidden />
               )}
             </div>
             <div className="flex flex-col gap-1">
@@ -63,10 +66,15 @@ function StartupPreview({
               {startup.tagline && (
                 <p className="text-small text-gray-500">{startup.tagline}</p>
               )}
-              <div className="text-caption flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-500">
-                {startup.industry && <span>{startup.industry.name}</span>}
-                {startup.industry && startup.stage && <span>•</span>}
-                {startup.stage && <span>{startup.stage.name}</span>}
+              <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                {startup.industry && (
+                  <span className={`text-caption inline-flex items-center rounded-full px-2 py-0.5 font-medium ${accent.softBg} ${accent.softText}`}>
+                    {startup.industry.name}
+                  </span>
+                )}
+                {startup.stage && (
+                  <span className="text-caption text-gray-500">{startup.stage.name}</span>
+                )}
               </div>
             </div>
           </div>

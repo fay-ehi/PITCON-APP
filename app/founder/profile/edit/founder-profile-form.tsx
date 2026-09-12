@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Briefcase, Link2, Loader2, User } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -94,7 +94,12 @@ function FounderProfileForm({
     >
       <Card>
         <CardHeader>
-          <CardTitle>Personal information</CardTitle>
+          <div className="flex items-center gap-2.5">
+            <span className="bg-primary-50 flex size-8 items-center justify-center rounded-full">
+              <User className="text-primary size-4" aria-hidden />
+            </span>
+            <CardTitle>Personal information</CardTitle>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <div className="space-y-2">
@@ -143,7 +148,12 @@ function FounderProfileForm({
 
       <Card>
         <CardHeader>
-          <CardTitle>Professional information</CardTitle>
+          <div className="flex items-center gap-2.5">
+            <span className="bg-accent-amber-soft flex size-8 items-center justify-center rounded-full">
+              <Briefcase className="text-accent-amber-soft-fg size-4" aria-hidden />
+            </span>
+            <CardTitle>Professional information</CardTitle>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <div className="space-y-2">
@@ -191,7 +201,12 @@ function FounderProfileForm({
 
       <Card>
         <CardHeader>
-          <CardTitle>Links</CardTitle>
+          <div className="flex items-center gap-2.5">
+            <span className="bg-accent-coral-soft flex size-8 items-center justify-center rounded-full">
+              <Link2 className="text-accent-coral-soft-fg size-4" aria-hidden />
+            </span>
+            <CardTitle>Links</CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">

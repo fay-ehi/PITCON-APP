@@ -49,10 +49,7 @@ export default async function MyStartupsPage() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-h2 text-gray-900">My Startups</h1>
-          <p className="text-small mt-1 text-gray-500">
-            Manage the startups you&apos;re building and introducing to
-            investors.
-          </p>
+          
         </div>
         {hasStartups && <AddStartupButton label="Add Startup" />}
       </div>

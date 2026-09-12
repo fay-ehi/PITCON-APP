@@ -1,9 +1,9 @@
 import type { MouseEvent } from "react";
 import Link from "next/link";
-import { Building2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { formatUsd } from "@/lib/startup/format";
+import { getIndustryAccent } from "@/lib/startup/industry-accent";
 import type { StartupDetail } from "@/types/startup";
 
 /**
@@ -27,10 +27,10 @@ function StartupResultCard({
   selected: boolean;
   onSelect: () => void;
 }) {
-  const meta = [startup.industry?.name, startup.stage?.name, startup.country]
-    .filter(Boolean)
-    .join(" \u00b7 ");
+  const meta = [startup.stage?.name, startup.country].filter(Boolean).join(" \u00b7 ");
   const funding = formatUsd(startup.fundingAmountSought);
+  const accent = getIndustryAccent(startup.industry?.slug);
+  const Icon = accent.icon;
 
   function handleClick(event: MouseEvent<HTMLAnchorElement>) {
     // Modifier/middle clicks mean "open in a new tab" - let the browser
@@ -57,19 +57,21 @@ function StartupResultCard({
       onClick={handleClick}
       aria-current={selected ? "true" : undefined}
       className={cn(
-        "flex flex-col gap-4 rounded-card border bg-white p-5 transition-colors sm:flex-row sm:items-start sm:gap-5 lg:p-6",
+        "relative flex flex-col gap-4 overflow-hidden rounded-card bg-white p-5 transition-all duration-200 sm:flex-row sm:items-start sm:gap-5 lg:p-6",
         "outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
         selected
-          ? "border-primary bg-primary-50/40 ring-1 ring-primary/30"
-          : "border-border hover:border-gray-300 hover:bg-gray-50",
+          ? "shadow-strong ring-2 ring-primary bg-primary-50/40"
+          : "shadow-subtle hover:shadow-medium",
       )}
     >
-      <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-card border border-border bg-gray-100">
+      <div aria-hidden className={cn("absolute inset-y-0 left-0 w-1.5", accent.solidBg)} />
+
+      <div className={cn("ml-1.5 flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-card", accent.solidBg)}>
         {startup.logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={startup.logoUrl} alt="" className="size-full object-cover" />
         ) : (
-          <Building2 className="size-5 text-gray-300" aria-hidden />
+          <Icon className={cn("size-5", accent.solidText)} aria-hidden />
         )}
       </div>
 
@@ -88,7 +90,14 @@ function StartupResultCard({
           )}
         </div>
 
-        {meta && <p className="text-caption text-gray-500">{meta}</p>}
+        <div className="flex flex-wrap items-center gap-2">
+          {startup.industry && (
+            <span className={cn("text-caption inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-medium", accent.softBg, accent.softText)}>
+              {startup.industry.name}
+            </span>
+          )}
+          {meta && <span className="text-caption text-gray-400">{meta}</span>}
+        </div>
 
         {startup.description && (
           <p className="line-clamp-2 text-small text-gray-500">{startup.description}</p>

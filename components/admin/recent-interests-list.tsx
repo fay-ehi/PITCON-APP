@@ -17,7 +17,7 @@ export function RecentInterestsList({ interests }: { interests: RecentInterest[]
       {interests.map((interest) => (
         <div
           key={interest.id}
-          className="flex items-center justify-between gap-4 rounded-card border border-border bg-white p-4"
+          className="flex items-center justify-between gap-4 rounded-card shadow-subtle bg-white p-4"
         >
           <div className="min-w-0">
             <p className="truncate text-small font-medium text-gray-900">

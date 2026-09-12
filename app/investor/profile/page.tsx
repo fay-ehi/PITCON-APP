@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Building2, Globe, Landmark, MapPin, Wallet } from "lucide-react";
 
 import { getCurrentUserProfile } from "@/lib/auth/session";
 import { getInvestorProfileDetail } from "@/lib/queries/profile";
@@ -8,11 +8,9 @@ import { calculateInvestorProfileCompletion } from "@/lib/profile/completion";
 import { investorTypeLabel } from "@/constants/investor-types";
 import { Container } from "@/components/shared/container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { ProfileField } from "@/components/profile/profile-field";
-import { ProfileCompletionBar } from "@/components/profile/profile-completion-bar";
+import { getIndustryAccent } from "@/lib/startup/industry-accent";
 
 export const metadata: Metadata = {
   title: "Your Profile",
@@ -47,117 +45,114 @@ export default async function InvestorProfilePage() {
 
   const fundingRangeLabel =
     profile.fundingRangeMin !== null || profile.fundingRangeMax !== null
-      ? `${formatUsd(profile.fundingRangeMin) ?? "Any"} – ${
+      ? `${formatUsd(profile.fundingRangeMin) ?? "Any"} \u2013 ${
           formatUsd(profile.fundingRangeMax) ?? "Any"
         }`
       : null;
 
   return (
-    <Container className="max-w-2xl py-12">
-      <div className="flex items-start justify-between gap-4">
-        <ProfileHeader
-          name={profile.fullName}
-          avatarUrl={profile.avatarUrl}
-          subtitle={profile.organization}
-        />
-        <Button asChild variant="secondary" size="sm" className="shrink-0">
-          <Link href="/investor/profile/edit">Edit profile</Link>
-        </Button>
-      </div>
+    <Container className="max-w-4xl py-10 sm:py-12">
+      <ProfileHeader
+        name={profile.fullName}
+        avatarUrl={profile.avatarUrl}
+        subtitle={profile.organization}
+        roleLabel="Investor"
+        editHref="/investor/profile/edit"
+        completion={completion}
+      />
 
-      {completion < 100 && (
-        <ProfileCompletionBar percentage={completion} className="mt-6" />
-      )}
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="flex flex-col gap-6 lg:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle>At a glance</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-5">
+              <ProfileField icon={Building2} label="Organization" value={profile.organization} />
+              <ProfileField
+                icon={Landmark}
+                label="Investor type"
+                value={investorTypeLabel(profile.investorType)}
+              />
+              <ProfileField icon={MapPin} label="Country" value={profile.country} />
+              <ProfileField icon={Wallet} label="Funding range" value={fundingRangeLabel} />
+              <ProfileField
+                icon={Globe}
+                label="LinkedIn"
+                value={
+                  profile.linkedinUrl ? (
+                    <a
+                      href={profile.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      {profile.linkedinUrl}
+                    </a>
+                  ) : null
+                }
+              />
+            </CardContent>
+          </Card>
+        </div>
 
-      <div className="mt-8 flex flex-col gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Professional information</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <ProfileField label="Organization" value={profile.organization} />
-            <ProfileField
-              label="Investor type"
-              value={investorTypeLabel(profile.investorType)}
-            />
-            <ProfileField label="Country" value={profile.country} />
-            <ProfileField
-              label="Bio"
-              value={profile.bio}
-              className="sm:col-span-2"
-            />
-          </CardContent>
-        </Card>
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>About</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProfileField label="Bio" value={profile.bio} />
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Links</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ProfileField
-              label="LinkedIn"
-              value={
-                profile.linkedinUrl ? (
-                  <a
-                    href={profile.linkedinUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    {profile.linkedinUrl}
-                  </a>
-                ) : null
-              }
-            />
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Investment preferences</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-5">
+              <div className="flex flex-col gap-2">
+                <span className="text-caption font-medium text-gray-500">Industries</span>
+                {profile.industries.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {profile.industries.map((industry) => {
+                      const accent = getIndustryAccent(industry.slug);
+                      return (
+                        <span
+                          key={industry.id}
+                          className={`text-caption inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium ${accent.softBg} ${accent.softText}`}
+                        >
+                          <accent.icon className="size-3" aria-hidden />
+                          {industry.name}
+                        </span>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <span className="text-body text-gray-400 italic">Not added yet</span>
+                )}
+              </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Investment preferences</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <span className="text-caption font-medium text-gray-500">
-                Industries
-              </span>
-              {profile.industries.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {profile.industries.map((industry) => (
-                    <Badge key={industry.id} variant="primary">
-                      {industry.name}
-                    </Badge>
-                  ))}
-                </div>
-              ) : (
-                <span className="text-body text-gray-400 italic">
-                  Not added yet
-                </span>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <span className="text-caption font-medium text-gray-500">
-                Startup stages
-              </span>
-              {profile.stages.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {profile.stages.map((stage) => (
-                    <Badge key={stage.id} variant="secondary">
-                      {stage.name}
-                    </Badge>
-                  ))}
-                </div>
-              ) : (
-                <span className="text-body text-gray-400 italic">
-                  Not added yet
-                </span>
-              )}
-            </div>
-
-            <ProfileField label="Funding range" value={fundingRangeLabel} />
-          </CardContent>
-        </Card>
+              <div className="flex flex-col gap-2">
+                <span className="text-caption font-medium text-gray-500">Startup stages</span>
+                {profile.stages.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {profile.stages.map((stage) => (
+                      <span
+                        key={stage.id}
+                        className="text-caption bg-primary-50 text-primary-700 inline-flex items-center rounded-full px-2.5 py-1 font-medium"
+                      >
+                        {stage.name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-body text-gray-400 italic">Not added yet</span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </Container>
   );

@@ -1,6 +1,5 @@
-import { Building2 } from "lucide-react";
-
 import { formatUsd } from "@/lib/startup/format";
+import { getIndustryAccent } from "@/lib/startup/industry-accent";
 
 /**
  * Small live-updating preview card for the desktop split layout (Sprint
@@ -14,6 +13,7 @@ function StartupMiniPreview({
   tagline,
   logoUrl,
   industryName,
+  industrySlug,
   stageName,
   fundingAmountSought,
 }: {
@@ -21,18 +21,22 @@ function StartupMiniPreview({
   tagline: string;
   logoUrl: string | null;
   industryName: string | null;
+  industrySlug?: string | null;
   stageName: string | null;
   fundingAmountSought: number | null;
 }) {
+  const accent = getIndustryAccent(industrySlug);
+  const Icon = accent.icon;
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
-        <div className="rounded-card bg-gray-100 border-border flex size-11 shrink-0 items-center justify-center overflow-hidden border">
+        <div className={`rounded-card flex size-11 shrink-0 items-center justify-center overflow-hidden ${accent.solidBg}`}>
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={logoUrl} alt="" className="size-full object-cover" />
           ) : (
-            <Building2 className="size-4 text-gray-300" aria-hidden />
+            <Icon className={`size-4 ${accent.solidText}`} aria-hidden />
           )}
         </div>
         <div className="min-w-0">
@@ -46,10 +50,13 @@ function StartupMiniPreview({
       </div>
 
       {(industryName || stageName) && (
-        <div className="text-caption flex flex-wrap gap-x-2 text-gray-500">
-          {industryName && <span>{industryName}</span>}
-          {industryName && stageName && <span>•</span>}
-          {stageName && <span>{stageName}</span>}
+        <div className="flex flex-wrap items-center gap-2">
+          {industryName && (
+            <span className={`text-caption inline-flex items-center rounded-full px-2 py-0.5 font-medium ${accent.softBg} ${accent.softText}`}>
+              {industryName}
+            </span>
+          )}
+          {stageName && <span className="text-caption text-gray-500">{stageName}</span>}
         </div>
       )}
 

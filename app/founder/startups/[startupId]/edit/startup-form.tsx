@@ -752,6 +752,7 @@ function StartupForm({
                 tagline={watched.tagline ?? ""}
                 logoUrl={logoUrl}
                 industryName={selectedIndustry?.name ?? null}
+                industrySlug={selectedIndustry?.slug ?? null}
                 stageName={selectedStage?.name ?? null}
                 fundingAmountSought={currentFields.fundingAmountSought}
               />

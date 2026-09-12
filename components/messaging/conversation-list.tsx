@@ -84,7 +84,7 @@ function ConversationList({
                   <AvatarFallback>{initial}</AvatarFallback>
                 </Avatar>
               ) : (
-                <div className="rounded-card border-border flex size-10 shrink-0 items-center justify-center overflow-hidden border bg-gray-100">
+                <div className="rounded-card bg-primary-50 flex size-10 shrink-0 items-center justify-center overflow-hidden">
                   {conversation.startup.logoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -93,7 +93,7 @@ function ConversationList({
                       className="size-full object-cover"
                     />
                   ) : (
-                    <Building2 className="size-4 text-gray-300" aria-hidden />
+                    <Building2 className="text-primary size-4" aria-hidden />
                   )}
                 </div>
               )}
