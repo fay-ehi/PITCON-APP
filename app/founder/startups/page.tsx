@@ -65,8 +65,6 @@ export default async function MyStartupsPage() {
           <StartupEmptyState />
         )}
       </div>
-
-      <MyStartupsDecoration className="pointer-events-none absolute right-6 bottom-6 hidden lg:block" />
-    </Container>
+      <MyStartupsDecoration className="pointer-events-none absolute right-16 -bottom-20 hidden lg:block" />   </Container>
   );
 }
