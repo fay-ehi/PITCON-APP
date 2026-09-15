@@ -5,6 +5,7 @@ import { Building2 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { InterestStatusBadge } from "@/components/shared/interest-status-badge";
+import { VerifiedBadge } from "@/components/shared/verified-badge";
 import { InterestDetailDialog } from "@/components/founder/interest-detail-dialog";
 import { formatRelativeDate } from "@/lib/format/date";
 import type { FounderInterestSummary } from "@/types/interest";
@@ -40,8 +41,9 @@ function InterestRow({ interest }: { interest: FounderInterestSummary }) {
         </Avatar>
 
         <div className="min-w-0 flex-1">
-          <p className="text-body truncate font-semibold text-gray-900">
-            {interest.investor.fullName}
+          <p className="flex items-center gap-1 truncate text-body font-semibold text-gray-900">
+            <span className="truncate">{interest.investor.fullName}</span>
+            <VerifiedBadge verified={interest.investor.verified} />
           </p>
           <p className="text-caption flex items-center gap-1 truncate text-gray-500">
             <Building2 className="size-3 shrink-0" aria-hidden />

@@ -18,10 +18,12 @@ export function rowToDetail(
   row: StartupRow,
   industries: Awaited<ReturnType<typeof getIndustries>>,
   stages: Awaited<ReturnType<typeof getStartupStages>>,
+  founderVerified: boolean,
 ): StartupDetail {
   return {
     id: row.id,
     status: row.status,
+    founderVerified,
     name: row.name,
     logoUrl: row.logo_url,
     coverImageUrl: row.cover_image_url,
@@ -85,7 +87,9 @@ export async function getStartupsForFounder(
     throw new Error(`Failed to load startups: ${error.message}`);
   }
 
-  return (rows ?? []).map((row) => rowToDetail(row, industries, stages));
+  const verifiedMap = await getFounderVerifiedMap(supabase, [founderId]);
+  const verified = verifiedMap.get(founderId) ?? false;
+  return (rows ?? []).map((row) => rowToDetail(row, industries, stages, verified));
 }
 
 /**
@@ -97,6 +101,32 @@ export async function getStartupsForFounder(
  * nonexistent id, rather than a distinguishable "forbidden" response
  * that would confirm the id exists.
  */
+/** Batched `founder_profiles.verified` lookup, keyed by founder id -
+ * shared by every place that maps one or more `startups` rows to
+ * `StartupDetail` (this file's own `getStartupById`, Discover, My
+ * Shortlist). A founder id with no resolvable row (shouldn't happen;
+ * RLS + the FK guarantee one) defaults to `false` rather than dropping
+ * the row - same "fail closed" reasoning as `StartupDetail.
+ * founderVerified`'s own comment. */
+export async function getFounderVerifiedMap(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  founderIds: string[],
+): Promise<Map<string, boolean>> {
+  const uniqueIds = [...new Set(founderIds)];
+  if (uniqueIds.length === 0) return new Map();
+
+  const { data, error } = await supabase
+    .from("founder_profiles")
+    .select("id, verified")
+    .in("id", uniqueIds);
+
+  if (error) {
+    throw new Error(`Failed to load founder verification status: ${error.message}`);
+  }
+
+  return new Map((data ?? []).map((row) => [row.id, row.verified]));
+}
+
 export async function getStartupById(
   startupId: string,
   founderId: string,
@@ -120,7 +150,8 @@ export async function getStartupById(
   }
   if (!row) return null;
 
-  return rowToDetail(row, industries, stages);
+  const verifiedMap = await getFounderVerifiedMap(supabase, [row.founder_id]);
+  return rowToDetail(row, industries, stages, verifiedMap.get(row.founder_id) ?? false);
 }
 
 /** A short-lived download URL for the founder's own pitch deck. The

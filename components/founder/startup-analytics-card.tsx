@@ -2,6 +2,7 @@ import { Eye, TrendingUp, Users } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { VerifiedBadge } from "@/components/shared/verified-badge";
 import { investorTypeLabel } from "@/constants/investor-types";
 import { formatRelativeDate } from "@/lib/format/date";
 import { cn } from "@/lib/utils";
@@ -86,8 +87,9 @@ function StartupAnalyticsCard({ analytics }: { analytics: StartupAnalyticsSummar
                       <AvatarFallback>{initial}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-small font-medium text-gray-900">
-                        {viewer.fullName ?? "Investor"}
+                      <p className="flex items-center gap-1 truncate text-small font-medium text-gray-900">
+                        <span className="truncate">{viewer.fullName ?? "Investor"}</span>
+                        <VerifiedBadge verified={viewer.verified} />
                       </p>
                       {meta && <p className="truncate text-caption text-gray-500">{meta}</p>}
                     </div>

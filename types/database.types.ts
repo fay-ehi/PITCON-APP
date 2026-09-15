@@ -19,6 +19,9 @@
  *   - 20260813090000_messaging.sql                        (Sprint 7)
  *   - 20260814090000_product_tour_state.sql               (Sprint 10)
  *   - 20260901090000_startup_analytics_and_shortlist.sql   (Sprint 12)
+ *   - 20260902090000_fix_rls_recursion.sql                 (hotfix)
+ *   - 20260903090000_verified_badges.sql                   (Sprint 13)
+ *   - 20260904090000_reports.sql                           (Sprint 15)
  */
 export type Json =
   | string
@@ -76,6 +79,7 @@ export type Database = {
           country: string | null;
           bio: string | null;
           website_url: string | null;
+          verified: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -85,6 +89,7 @@ export type Database = {
           country?: string | null;
           bio?: string | null;
           website_url?: string | null;
+          verified?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -94,6 +99,7 @@ export type Database = {
           country?: string | null;
           bio?: string | null;
           website_url?: string | null;
+          verified?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -117,6 +123,7 @@ export type Database = {
           linkedin_url: string | null;
           funding_range_min: number | null;
           funding_range_max: number | null;
+          verified: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -129,6 +136,7 @@ export type Database = {
           linkedin_url?: string | null;
           funding_range_min?: number | null;
           funding_range_max?: number | null;
+          verified?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -141,6 +149,7 @@ export type Database = {
           linkedin_url?: string | null;
           funding_range_min?: number | null;
           funding_range_max?: number | null;
+          verified?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -672,6 +681,77 @@ export type Database = {
           },
         ];
       };
+      reports: {
+        Row: {
+          id: string;
+          reporter_id: string;
+          reported_user_id: string;
+          startup_id: string | null;
+          conversation_id: string | null;
+          reason: Database["public"]["Enums"]["report_reason"];
+          details: string | null;
+          status: Database["public"]["Enums"]["report_status"];
+          created_at: string;
+          reviewed_at: string | null;
+          reviewed_by_email: string | null;
+        };
+        Insert: {
+          id?: string;
+          reporter_id: string;
+          reported_user_id: string;
+          startup_id?: string | null;
+          conversation_id?: string | null;
+          reason: Database["public"]["Enums"]["report_reason"];
+          details?: string | null;
+          status?: Database["public"]["Enums"]["report_status"];
+          created_at?: string;
+          reviewed_at?: string | null;
+          reviewed_by_email?: string | null;
+        };
+        Update: {
+          id?: string;
+          reporter_id?: string;
+          reported_user_id?: string;
+          startup_id?: string | null;
+          conversation_id?: string | null;
+          reason?: Database["public"]["Enums"]["report_reason"];
+          details?: string | null;
+          status?: Database["public"]["Enums"]["report_status"];
+          created_at?: string;
+          reviewed_at?: string | null;
+          reviewed_by_email?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reports_reporter_id_fkey";
+            columns: ["reporter_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reports_reported_user_id_fkey";
+            columns: ["reported_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reports_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reports_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "conversations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -690,6 +770,9 @@ export type Database = {
       interest_status: "pending" | "accepted" | "declined";
       notification_type:
         "interest_received" | "interest_accepted" | "interest_declined";
+      report_reason:
+        "spam_or_scam" | "harassment" | "fake_profile" | "inappropriate_content" | "other";
+      report_status: "open" | "resolved" | "dismissed";
     };
     CompositeTypes: Record<string, never>;
   };

@@ -16,7 +16,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ProfileField } from "@/components/profile/profile-field";
 import { ExpressInterestButton } from "@/components/investor/express-interest-button";
 import { ShortlistButton } from "@/components/investor/shortlist-button";
+import { VerifiedBadge } from "@/components/shared/verified-badge";
+import { EngagementStatsLoader } from "@/components/shared/engagement-stats-loader";
+import { ReportButton } from "@/components/shared/report-button";
 import { getDiscoverPitchDeckUrlAction } from "@/lib/discover/discover-actions";
+import { getFounderEngagementSummaryAction } from "@/lib/reputation/reputation-actions";
 import { formatCount, formatLocation, formatUsd } from "@/lib/startup/format";
 import { getIndustryAccent } from "@/lib/startup/industry-accent";
 import type { StartupDetail } from "@/types/startup";
@@ -208,7 +212,10 @@ function PreviewContent({
               )}
             </div>
             <div className="flex flex-col gap-1">
-              <h2 className="text-h3 font-semibold text-gray-900">{startup.name}</h2>
+              <h2 className="flex items-center gap-1.5 text-h3 font-semibold text-gray-900">
+                {startup.name}
+                <VerifiedBadge verified={startup.founderVerified} />
+              </h2>
               {startup.tagline && <p className="text-small text-gray-500">{startup.tagline}</p>}
               <div className="flex flex-wrap items-center gap-2 pt-0.5">
                 {startup.industry && (
@@ -252,6 +259,15 @@ function PreviewContent({
           <ProfileField label="Description" value={startup.description} />
           <ProfileField label="Elevator pitch" value={startup.elevatorPitch} />
         </div>
+      </div>
+
+      <div className="flex flex-col gap-3 border-t border-border pt-6">
+        <SectionHeading>Founder</SectionHeading>
+        <EngagementStatsLoader
+          key={startup.id}
+          fetcher={() => getFounderEngagementSummaryAction(startup.id)}
+        />
+        <ReportButton label="Report this startup" startupId={startup.id} className="w-fit" />
       </div>
 
       <div className="flex flex-col gap-3 border-t border-border pt-6">

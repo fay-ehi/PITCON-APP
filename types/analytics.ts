@@ -20,6 +20,8 @@ export type StartupViewer = {
   organization: string | null;
   investorType: InvestorType | null;
   viewedAt: string;
+  /** Sprint 13 (Verified Badges). */
+  verified: boolean;
 };
 
 /** Everything the Founder Analytics ("Insights") card on a startup's

@@ -142,7 +142,7 @@ export async function getFounderInterests(
     await Promise.all([
       supabase
         .from("investor_profiles")
-        .select("id, organization, investor_type, country, bio, linkedin_url")
+        .select("id, organization, investor_type, country, bio, linkedin_url, verified")
         .in("id", investorIds),
       supabase.from("profiles").select("id, full_name, avatar_url").in("id", investorIds),
     ]);
@@ -183,6 +183,7 @@ export async function getFounderInterests(
         country: investorProfile?.country ?? null,
         bio: investorProfile?.bio ?? null,
         linkedinUrl: investorProfile?.linkedin_url ?? null,
+        verified: investorProfile?.verified ?? false,
       },
     };
   });

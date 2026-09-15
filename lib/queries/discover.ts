@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getIndustries, getStartupStages } from "@/lib/queries/profile";
-import { rowToDetail } from "@/lib/queries/startup";
+import { getFounderVerifiedMap, rowToDetail } from "@/lib/queries/startup";
 import { FUNDING_BUCKETS, type FundingBucketId } from "@/constants/funding-buckets";
 import type { StartupDetail } from "@/types/startup";
 
@@ -101,8 +101,15 @@ export async function getDiscoverableStartups(
   const hasMore = allRows.length > limit;
   const pageRows = hasMore ? allRows.slice(0, limit) : allRows;
 
+  const verifiedMap = await getFounderVerifiedMap(
+    supabase,
+    pageRows.map((row) => row.founder_id),
+  );
+
   return {
-    startups: pageRows.map((row) => rowToDetail(row, industries, stages)),
+    startups: pageRows.map((row) =>
+      rowToDetail(row, industries, stages, verifiedMap.get(row.founder_id) ?? false),
+    ),
     hasMore,
   };
 }
@@ -136,5 +143,6 @@ export async function getDiscoverableStartupById(
   }
   if (!row) return null;
 
-  return rowToDetail(row, industries, stages);
+  const verifiedMap = await getFounderVerifiedMap(supabase, [row.founder_id]);
+  return rowToDetail(row, industries, stages, verifiedMap.get(row.founder_id) ?? false);
 }

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { formatUsd } from "@/lib/startup/format";
 import { getIndustryAccent } from "@/lib/startup/industry-accent";
 import { ShortlistButton } from "@/components/investor/shortlist-button";
+import { VerifiedBadge } from "@/components/shared/verified-badge";
 import type { StartupDetail } from "@/types/startup";
 
 /**
@@ -92,7 +93,10 @@ function StartupResultCard({
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 pr-11">
             <div className="min-w-0">
-              <p className="truncate text-body font-semibold text-gray-900">{startup.name}</p>
+              <p className="flex items-center gap-1 text-body font-semibold text-gray-900">
+                <span className="truncate">{startup.name}</span>
+                <VerifiedBadge verified={startup.founderVerified} />
+              </p>
               {startup.tagline && (
                 <p className="truncate text-small text-gray-500">{startup.tagline}</p>
               )}

@@ -10,8 +10,12 @@ import { newMessageEmail } from "@/lib/email/templates/new-message";
  * hands back `null` rather than throwing when either lookup comes back
  * empty, so a missing/deleted user just means "don't send" instead of
  * an unhandled exception in a best-effort notification path.
+ *
+ * Exported (originally private to this file) once the Sprint 16 weekly
+ * digest needed the exact same lookup for every founder/investor being
+ * sent one, not just the one recipient of a single-user notification.
  */
-async function getEmailRecipient(userId: string): Promise<{ email: string; fullName: string } | null> {
+export async function getEmailRecipient(userId: string): Promise<{ email: string; fullName: string } | null> {
   const admin = createAdminClient();
 
   const [{ data: userData, error: userError }, { data: profile, error: profileError }] = await Promise.all([

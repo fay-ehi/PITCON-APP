@@ -116,7 +116,7 @@ export async function getStartupAnalytics(
     ] = await Promise.all([
       supabase
         .from("investor_profiles")
-        .select("id, organization, investor_type")
+        .select("id, organization, investor_type, verified")
         .in("id", recentViewerIds),
       supabase.from("profiles").select("id, full_name, avatar_url").in("id", recentViewerIds),
     ]);
@@ -145,6 +145,7 @@ export async function getStartupAnalytics(
         organization: investorProfile?.organization ?? null,
         investorType: investorProfile?.investor_type ?? null,
         viewedAt: latestViewedAtByInvestor.get(investorId)!,
+        verified: investorProfile?.verified ?? false,
       };
     });
   }

@@ -37,11 +37,13 @@ function toConversationParticipant(
     { id: string; full_name: string; avatar_url: string | null } | undefined,
   fallbackId: string,
   fallbackName: string,
+  verified: boolean,
 ) {
   return {
     id: fallbackId,
     fullName: profile?.full_name ?? fallbackName,
     avatarUrl: profile?.avatar_url ?? null,
+    verified,
   };
 }
 
@@ -117,18 +119,25 @@ export async function getFounderConversations(
   if (conversations.length === 0) return [];
 
   const investorIds = [...new Set(conversations.map((c) => c.investor_id))];
-  const { data: profileRows, error: profileError } = await supabase
-    .from("profiles")
-    .select("id, full_name, avatar_url")
-    .in("id", investorIds);
+  const [{ data: profileRows, error: profileError }, { data: investorProfileRows, error: investorProfileError }] =
+    await Promise.all([
+      supabase.from("profiles").select("id, full_name, avatar_url").in("id", investorIds),
+      supabase.from("investor_profiles").select("id, verified").in("id", investorIds),
+    ]);
 
   if (profileError) {
     throw new Error(
       `Failed to load investor profiles: ${profileError.message}`,
     );
   }
+  if (investorProfileError) {
+    throw new Error(
+      `Failed to load investor profiles: ${investorProfileError.message}`,
+    );
+  }
 
   const profileById = new Map((profileRows ?? []).map((row) => [row.id, row]));
+  const verifiedById = new Map((investorProfileRows ?? []).map((row) => [row.id, row.verified]));
 
   return conversations
     .map((row: ConversationRow): ConversationSummary => ({
@@ -141,6 +150,7 @@ export async function getFounderConversations(
         profileById.get(row.investor_id),
         row.investor_id,
         "Investor",
+        verifiedById.get(row.investor_id) ?? false,
       ),
       lastMessageAt: row.last_message_at,
       lastMessagePreview: row.last_message_preview,
@@ -189,16 +199,21 @@ export async function getInvestorConversations(
   const startupById = new Map(startups.map((row) => [row.id, row]));
 
   const founderIds = [...new Set(startups.map((s) => s.founder_id))];
-  const { data: profileRows, error: profileError } = await supabase
-    .from("profiles")
-    .select("id, full_name, avatar_url")
-    .in("id", founderIds);
+  const [{ data: profileRows, error: profileError }, { data: founderProfileRows, error: founderProfileError }] =
+    await Promise.all([
+      supabase.from("profiles").select("id, full_name, avatar_url").in("id", founderIds),
+      supabase.from("founder_profiles").select("id, verified").in("id", founderIds),
+    ]);
 
   if (profileError) {
     throw new Error(`Failed to load founder profiles: ${profileError.message}`);
   }
+  if (founderProfileError) {
+    throw new Error(`Failed to load founder profiles: ${founderProfileError.message}`);
+  }
 
   const profileById = new Map((profileRows ?? []).map((row) => [row.id, row]));
+  const verifiedById = new Map((founderProfileRows ?? []).map((row) => [row.id, row.verified]));
 
   return conversations
     .map((row: ConversationRow): ConversationSummary => {
@@ -210,6 +225,7 @@ export async function getInvestorConversations(
           startup ? profileById.get(startup.founder_id) : undefined,
           startup?.founder_id ?? "",
           "Founder",
+          startup ? (verifiedById.get(startup.founder_id) ?? false) : false,
         ),
         lastMessageAt: row.last_message_at,
         lastMessagePreview: row.last_message_preview,
@@ -267,6 +283,16 @@ export async function getFounderConversationDetail(
     throw new Error(`Failed to load conversation: ${profileError.message}`);
   }
 
+  const { data: investorVerification, error: verificationError } = await supabase
+    .from("investor_profiles")
+    .select("verified")
+    .eq("id", conversation.investor_id)
+    .maybeSingle();
+
+  if (verificationError) {
+    throw new Error(`Failed to load conversation: ${verificationError.message}`);
+  }
+
   return {
     id: conversation.id,
     startup: { id: startup.id, name: startup.name, logoUrl: startup.logo_url },
@@ -274,6 +300,7 @@ export async function getFounderConversationDetail(
       investorProfile ?? undefined,
       conversation.investor_id,
       "Investor",
+      investorVerification?.verified ?? false,
     ),
   };
 }
@@ -323,6 +350,18 @@ export async function getInvestorConversationDetail(
     throw new Error(`Failed to load conversation: ${profileError.message}`);
   }
 
+  const { data: founderVerification, error: verificationError } = startup
+    ? await supabase
+        .from("founder_profiles")
+        .select("verified")
+        .eq("id", startup.founder_id)
+        .maybeSingle()
+    : { data: null, error: null };
+
+  if (verificationError) {
+    throw new Error(`Failed to load conversation: ${verificationError.message}`);
+  }
+
   return {
     id: conversation.id,
     startup: toConversationStartupSummary(
@@ -333,6 +372,7 @@ export async function getInvestorConversationDetail(
       founderProfile ?? undefined,
       startup?.founder_id ?? "",
       "Founder",
+      founderVerification?.verified ?? false,
     ),
   };
 }

@@ -24,6 +24,8 @@ export type ConversationParticipant = {
   id: string;
   fullName: string;
   avatarUrl: string | null;
+  /** Sprint 13 (Verified Badges). */
+  verified: boolean;
 };
 
 /** One row in either workspace's conversation list - see

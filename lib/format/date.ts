@@ -62,6 +62,19 @@ export function formatMessageTime(iso: string): string {
 }
 
 /**
+ * "March 2026" - Sprint 14's "Member since" line on the Engagement
+ * summary (see lib/queries/reputation.ts). Deliberately coarser than
+ * every other formatter in this file: tenure is the point, not the
+ * exact day someone signed up.
+ */
+export function formatMonthYear(iso: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(iso));
+}
+
+/**
  * Sprint 7's conversation list timestamp - "2m" / "3h" / "5d", matching
  * the brief's "CONVERSATION LIST" mockup exactly. Distinct from
  * `formatRelativeDate`'s "5 minutes ago": a list row needs the shortest

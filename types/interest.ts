@@ -48,6 +48,11 @@ export type InterestInvestorSummary = {
   country: string | null;
   bio: string | null;
   linkedinUrl: string | null;
+  /** Sprint 13 (Verified Badges) - already covered by the same RLS
+   * this whole type's own comment describes (nothing new needed here),
+   * since it's just one more column on a row a Founder could already
+   * read in full. */
+  verified: boolean;
 };
 
 /** One row in the Founder's "Interests" list - see

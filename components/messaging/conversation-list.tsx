@@ -3,6 +3,7 @@ import { Building2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { VerifiedBadge } from "@/components/shared/verified-badge";
 import { formatShortRelativeTime } from "@/lib/format/date";
 import type { ConversationSummary } from "@/types/message";
 
@@ -101,13 +102,16 @@ function ConversationList({
               <div className="min-w-0 flex-1">
                 <p
                   className={cn(
-                    "text-small truncate text-gray-900",
+                    "text-small flex items-center gap-1 text-gray-900",
                     conversation.isUnread ? "font-semibold" : "font-medium",
                   )}
                 >
-                  {role === "founder"
-                    ? conversation.otherParticipant.fullName
-                    : conversation.startup.name || "Untitled startup"}
+                  <span className="truncate">
+                    {role === "founder"
+                      ? conversation.otherParticipant.fullName
+                      : conversation.startup.name || "Untitled startup"}
+                  </span>
+                  <VerifiedBadge verified={conversation.otherParticipant.verified} />
                 </p>
                 {conversation.lastMessagePreview && (
                   <p

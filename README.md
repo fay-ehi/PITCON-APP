@@ -153,8 +153,21 @@ never adds latency to the user-facing action):
 
 Every send is best-effort: `sendEmail()` never throws, so a Resend
 outage can't turn a successful interest/message into a failed one — it
-just logs and moves on. A weekly re-engagement digest for inactive users
-isn't built — see Roadmap.
+just logs and moves on.
+
+## Weekly digest
+
+`app/api/cron/weekly-digest/route.ts` (see its own comment for the
+full reasoning) — a founder digest (views + new interest this week, or
+a nudge if they have an unpublished draft) and an investor digest (new
+published startups this week, narrowed to saved industry/stage
+preferences when set). Both skip sending entirely when there's nothing
+real to report, which is what lets this double as the re-engagement
+digest this section used to list under Roadmap — the content itself
+pulls back anyone who's been away, without a separate "inactive user"
+detection pass. Scheduled via `vercel.json` + `CRON_SECRET` (see
+.env.example); not Vercel-specific under the hood, any scheduler that
+can send the same bearer token works.
 
 ## Error monitoring
 
@@ -237,6 +250,18 @@ Flag if that assumption is wrong.
 - Every route gets its own `error.tsx` + `loading.tsx` (or is covered by
   a route-group-level pair) — see "Error and loading states" above.
 
+## Product analytics
+
+`/admin/funnel` (Sprint 17) - a founder activation funnel and an
+investor activation funnel, side by side, all-time counts. See
+`getActivationFunnel` in `lib/queries/admin.ts` for what each step
+actually measures and the honest substitutions made where the app
+doesn't track something the literal step name implies (there's no
+logged "search" event, no pre-existing "investor profile complete"
+threshold) - worth reading before trusting a number here at a glance.
+Not cohorted by signup date yet; see that function's own comment for
+why that's a deliberate scope cut, not an oversight.
+
 ## CI
 
 `.github/workflows/ci.yml` runs lint, typecheck, and build on every push
@@ -245,7 +270,3 @@ and pull request. There's no automated test suite yet — see Roadmap.
 ## Roadmap (not yet built)
 
 - Automated tests (auth, RLS-sensitive queries, message send/retry path)
-- A weekly re-engagement digest email for inactive users (see
-  "Transactional email" above for what's already built)
-- Product analytics (onboarding drop-off, activation funnel)
-- A flagged-content/reporting mechanism (see "Admin view" above)

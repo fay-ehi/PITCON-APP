@@ -42,7 +42,7 @@ vi.mock("@/lib/supabase/client", () => ({
 const conversation: ConversationDetail = {
   id: "conversation-1",
   startup: { id: "startup-1", name: "Analytical Engines Inc.", logoUrl: null },
-  otherParticipant: { id: "investor-1", fullName: "Ada Lovelace", avatarUrl: null },
+  otherParticipant: { id: "investor-1", fullName: "Ada Lovelace", avatarUrl: null, verified: false },
 };
 
 function renderThread() {

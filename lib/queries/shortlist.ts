@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getIndustries, getStartupStages } from "@/lib/queries/profile";
-import { rowToDetail } from "@/lib/queries/startup";
+import { getFounderVerifiedMap, rowToDetail } from "@/lib/queries/startup";
 import type { ShortlistedStartup } from "@/types/shortlist";
 
 /**
@@ -73,6 +73,10 @@ export async function getShortlistedStartups(
   }
 
   const startupById = new Map((startupRows ?? []).map((row) => [row.id, row]));
+  const verifiedMap = await getFounderVerifiedMap(
+    supabase,
+    (startupRows ?? []).map((row) => row.founder_id),
+  );
 
   // Preserves the shortlist's own most-recently-shortlisted-first
   // order rather than whatever order `.in()` happens to return, and
@@ -84,7 +88,12 @@ export async function getShortlistedStartups(
       const startupRow = startupById.get(row.startup_id);
       if (!startupRow) return null;
       return {
-        ...rowToDetail(startupRow, industries, stages),
+        ...rowToDetail(
+          startupRow,
+          industries,
+          stages,
+          verifiedMap.get(startupRow.founder_id) ?? false,
+        ),
         shortlistedAt: row.created_at,
       };
     })

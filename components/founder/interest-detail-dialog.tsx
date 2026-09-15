@@ -17,6 +17,10 @@ import {
 } from "@/components/ui/dialog";
 import { ProfileField } from "@/components/profile/profile-field";
 import { InterestStatusBadge } from "@/components/shared/interest-status-badge";
+import { VerifiedBadge } from "@/components/shared/verified-badge";
+import { EngagementStatsLoader } from "@/components/shared/engagement-stats-loader";
+import { ReportButton } from "@/components/shared/report-button";
+import { getInvestorEngagementSummaryAction } from "@/lib/reputation/reputation-actions";
 import { investorTypeLabel } from "@/constants/investor-types";
 import { formatRelativeDate } from "@/lib/format/date";
 import { respondToInterestAction } from "@/lib/interests/interest-actions";
@@ -80,6 +84,7 @@ function InterestDetailDialog({
                 <AvatarFallback>{initial}</AvatarFallback>
               </Avatar>
               {interest.investor.fullName}
+              <VerifiedBadge verified={interest.investor.verified} />
             </DialogTitle>
             <DialogDescription>
               Interested in <span className="font-medium text-gray-700">{startupName}</span>
@@ -118,6 +123,18 @@ function InterestDetailDialog({
             />
           </div>
           <ProfileField label="Bio" value={interest.investor.bio} />
+
+          <div className="border-t border-border pt-4">
+            <EngagementStatsLoader
+              key={interest.investor.id}
+              fetcher={() => getInvestorEngagementSummaryAction(interest.investor.id)}
+            />
+            <ReportButton
+              label="Report this investor"
+              reportedUserId={interest.investor.id}
+              className="mt-3"
+            />
+          </div>
 
           <DialogFooter>
             <Button

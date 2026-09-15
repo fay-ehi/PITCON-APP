@@ -17,6 +17,8 @@ import {
   sendMessageAction,
 } from "@/lib/messages/message-actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { VerifiedBadge } from "@/components/shared/verified-badge";
+import { ReportButton } from "@/components/shared/report-button";
 import {
   MessageBubble,
   type ThreadMessage,
@@ -252,10 +254,13 @@ function ConversationThread({
         )}
 
         <div className="min-w-0 flex-1">
-          <p className="text-small truncate font-semibold text-gray-900">
-            {role === "founder"
-              ? conversation.otherParticipant.fullName
-              : conversation.startup.name || "Untitled startup"}
+          <p className="flex items-center gap-1 text-small font-semibold text-gray-900">
+            <span className="truncate">
+              {role === "founder"
+                ? conversation.otherParticipant.fullName
+                : conversation.startup.name || "Untitled startup"}
+            </span>
+            <VerifiedBadge verified={conversation.otherParticipant.verified} />
           </p>
           {role === "founder" && (
             <p className="text-caption truncate text-gray-500">
@@ -273,6 +278,13 @@ function ConversationThread({
             <ExternalLink className="size-3" aria-hidden />
           </Link>
         )}
+
+        <ReportButton
+          reportedUserId={conversation.otherParticipant.id}
+          conversationId={conversation.id}
+          label={role === "founder" ? "Report this investor" : "Report this founder"}
+          className="shrink-0"
+        />
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">

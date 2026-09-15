@@ -60,6 +60,17 @@ export type StartupDetail = StartupFormFields & {
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Sprint 13 (Verified Badges) - whether this startup's founder has
+   * been admin-verified. Not a `founder_profiles` join exposed
+   * wholesale here (no founder name/bio on `StartupDetail` - Discover
+   * is startup-first by design, see this type's own top comment) -
+   * just the one signal Discover actually wants to show. Populated by
+   * a small batched lookup in whichever query builds this object
+   * (rowToDetail itself stays synchronous and DB-free), defaulting to
+   * `false` for a founder with no `founder_profiles` row somehow, same
+   * "fail closed" reasoning as everywhere else a verified flag is
+   * looked up. */
+  founderVerified: boolean;
 };
 
 /** Which of the publish-required fields (see the
