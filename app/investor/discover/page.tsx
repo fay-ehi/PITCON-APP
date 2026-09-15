@@ -16,7 +16,8 @@ import { getIndustries, getStartupStages } from "@/lib/queries/profile";
 import { logStartupView } from "@/lib/analytics/track-view";
 import { isFundingBucketId } from "@/constants/funding-buckets";
 import { Container } from "@/components/shared/container";
-import { DiscoverControls } from "@/components/investor/discover-controls";
+import { DiscoverSearchBar } from "@/components/investor/discover-search-bar";
+import { DiscoverFilterSidebar } from "@/components/investor/discover-filter-sidebar";
 import { DiscoverWorkspace } from "@/components/investor/discover-workspace";
 import { InvestorProductTour } from "@/components/onboarding/investor-product-tour";
 
@@ -82,6 +83,13 @@ type DiscoverSearchParams = {
  * client has to be built during normal render and only the deferred
  * `.insert()` call happens inside the callback - see
  * lib/analytics/track-view.ts's top comment for the full reasoning.
+ *
+ * Layout note: filters live in a standing left sidebar
+ * (`discover-filter-sidebar.tsx`) and the search box sits in the main
+ * column (`discover-search-bar.tsx`) - previously both were one
+ * `DiscoverControls` component stacked as an inline row above the
+ * results. Purely a layout change: same four filters, same URL-param
+ * behavior (see `lib/discover/query-params.ts`), nothing added.
  */
 export default async function InvestorDiscoverPage({
   searchParams,
@@ -134,6 +142,14 @@ export default async function InvestorDiscoverPage({
   const backHref = `/investor/discover${baseQuery ? `?${baseQuery}` : ""}`;
   const clearFiltersHref = "/investor/discover";
 
+  const currentParams = {
+    q: q ?? "",
+    industry: industryId,
+    stage: stageId,
+    country,
+    funding,
+  };
+
   return (
     <Container className="py-8 sm:py-10">
       <InvestorProductTour
@@ -147,26 +163,39 @@ export default async function InvestorDiscoverPage({
         </p>
       </div>
 
-      <DiscoverControls
-        industries={industries}
-        stages={stages}
-        current={{ q: q ?? "", industry: industryId, stage: stageId, country, funding }}
-      />
+      <div className="grid gap-6 lg:grid-cols-[16rem_1fr]">
+        <div className="lg:sticky lg:top-6 lg:self-start">
+          <DiscoverFilterSidebar
+            industries={industries}
+            stages={stages}
+            current={currentParams}
+          />
+        </div>
 
-      <div className="mt-6">
-        <DiscoverWorkspace
-          initialStartups={startups}
-          initialHasMore={hasMore}
-          filters={filters}
-          baseQuery={baseQuery}
-          hasActiveFilters={hasActiveFilters}
-          clearFiltersHref={clearFiltersHref}
-          selectedStartupId={selectedStartupId ?? null}
-          selectedStartup={selectedStartup}
-          ownInterestStatus={ownInterest?.status ?? null}
-          initialShortlistedIds={shortlistedIds}
-          backHref={backHref}
-        />
+        <div className="flex flex-col gap-4 min-w-0">
+          <DiscoverSearchBar current={currentParams} />
+
+          {startups.length > 0 && (
+            <p className="text-small text-gray-500">
+              Showing {startups.length}
+              {hasMore ? "+" : ""} startup{startups.length === 1 ? "" : "s"}
+            </p>
+          )}
+
+          <DiscoverWorkspace
+            initialStartups={startups}
+            initialHasMore={hasMore}
+            filters={filters}
+            baseQuery={baseQuery}
+            hasActiveFilters={hasActiveFilters}
+            clearFiltersHref={clearFiltersHref}
+            selectedStartupId={selectedStartupId ?? null}
+            selectedStartup={selectedStartup}
+            ownInterestStatus={ownInterest?.status ?? null}
+            initialShortlistedIds={shortlistedIds}
+            backHref={backHref}
+          />
+        </div>
       </div>
     </Container>
   );

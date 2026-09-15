@@ -76,11 +76,24 @@ function MessagesWorkspace({
   // height than the flex parent actually has, defeating the point.
   // `min-h-[26rem]` keeps this usable on very short viewports instead of
   // collapsing toward zero.
+  //
+  // The same `min-height: auto` problem exists one level down, on each
+  // grid cell below (`grid-cols-1 md:grid-cols-[300px_1fr]`): a grid
+  // item defaults to sizing itself to fit its content too, same as a
+  // flex item. Each cell already had `min-w-0` to stop a long
+  // unbreakable string from blowing out the *column* width, but was
+  // missing the equivalent `min-h-0` for the *row* - so
+  // ConversationList's/ConversationThread's own internal
+  // `overflow-y-auto` panes never actually got to enforce a bounded
+  // height. Without it, the cell (and the composer inside it) simply
+  // render past this container's height instead of scrolling inside it,
+  // which is what pushed the whole page down regardless of how many
+  // messages were in the thread.
   return (
     <div className="rounded-card border-border mt-8 grid min-h-[26rem] flex-1 grid-cols-1 overflow-hidden border bg-white md:grid-cols-[300px_1fr]">
       <div
         className={cn(
-          "border-border flex flex-col md:border-r",
+          "border-border flex min-h-0 flex-col md:border-r",
           hasSelection && "hidden md:flex",
         )}
       >
@@ -95,7 +108,7 @@ function MessagesWorkspace({
 
       <div
         className={cn(
-          "flex min-w-0 flex-col",
+          "flex min-h-0 min-w-0 flex-col",
           !hasSelection && "hidden md:flex",
         )}
       >

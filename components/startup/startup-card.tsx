@@ -71,12 +71,7 @@ function StartupCard({ startup }: { startup: StartupDetail }) {
 
   return (
     <>
-      <Card className="hover:shadow-medium relative gap-3 overflow-hidden p-5 pt-6 transition-shadow duration-200">
-        <div
-          aria-hidden
-          className={`absolute top-0 left-0 h-1.5 w-full ${accent.solidBg}`}
-        />
-
+      <Card className="hover:shadow-medium relative gap-3 overflow-hidden p-5 transition-shadow duration-200">
         <div className="absolute top-4 right-3">
           <DropdownMenu>
             <DropdownMenuTrigger className="rounded-control focus-visible:ring-primary/30 flex size-8 items-center justify-center text-gray-400 transition-colors outline-none hover:bg-gray-100 hover:text-gray-700 focus-visible:ring-2">

@@ -79,9 +79,7 @@ function StartupResultCard({
             : "shadow-subtle hover:shadow-medium",
         )}
       >
-        <div aria-hidden className={cn("absolute inset-y-0 left-0 w-1.5", accent.solidBg)} />
-
-        <div className={cn("ml-1.5 flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-card", accent.solidBg)}>
+        <div className={cn("flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-card", accent.solidBg)}>
           {startup.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={startup.logoUrl} alt="" className="size-full object-cover" />
