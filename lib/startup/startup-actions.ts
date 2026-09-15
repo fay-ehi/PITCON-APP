@@ -137,6 +137,12 @@ export async function saveStartupAction(
       linkedin_url: d.linkedinUrl,
       twitter_url: d.twitterUrl,
       instagram_url: d.instagramUrl,
+      funding_raised_to_date: d.fundingRaisedToDate,
+      valuation: d.valuation,
+      monthly_burn_rate: d.monthlyBurnRate,
+      runway_months: d.runwayMonths,
+      traction_highlights: d.tractionHighlights,
+      pitch_video_url: d.pitchVideoUrl,
     })
     .eq("id", startupId)
     .eq("founder_id", user.id)
@@ -231,6 +237,12 @@ export async function publishStartupAction(
     linkedinUrl: row.linkedin_url,
     twitterUrl: row.twitter_url,
     instagramUrl: row.instagram_url,
+    fundingRaisedToDate: row.funding_raised_to_date,
+    valuation: row.valuation,
+    monthlyBurnRate: row.monthly_burn_rate,
+    runwayMonths: row.runway_months,
+    tractionHighlights: row.traction_highlights,
+    pitchVideoUrl: row.pitch_video_url,
   });
 
   if (missingFields.length > 0) {

@@ -72,6 +72,13 @@ type StartupFormValues = {
   linkedinUrl: string;
   twitterUrl: string;
   instagramUrl: string;
+  // Sprint 12 (richer startup profiles).
+  fundingRaisedToDate: string;
+  valuation: string;
+  monthlyBurnRate: string;
+  runwayMonths: string;
+  tractionHighlights: string;
+  pitchVideoUrl: string;
 };
 
 function toFormValues(startup: StartupDetail): StartupFormValues {
@@ -93,6 +100,12 @@ function toFormValues(startup: StartupDetail): StartupFormValues {
     linkedinUrl: startup.linkedinUrl ?? "",
     twitterUrl: startup.twitterUrl ?? "",
     instagramUrl: startup.instagramUrl ?? "",
+    fundingRaisedToDate: startup.fundingRaisedToDate?.toString() ?? "",
+    valuation: startup.valuation?.toString() ?? "",
+    monthlyBurnRate: startup.monthlyBurnRate?.toString() ?? "",
+    runwayMonths: startup.runwayMonths?.toString() ?? "",
+    tractionHighlights: startup.tractionHighlights ?? "",
+    pitchVideoUrl: startup.pitchVideoUrl ?? "",
   };
 }
 
@@ -123,6 +136,18 @@ function normalize(
   });
   if (employees.error)
     return { error: employees.error, field: "employeeCount" };
+  const fundingRaised = parseStartupNumberInput(values.fundingRaisedToDate);
+  if (fundingRaised.error)
+    return { error: fundingRaised.error, field: "fundingRaisedToDate" };
+  const valuation = parseStartupNumberInput(values.valuation);
+  if (valuation.error) return { error: valuation.error, field: "valuation" };
+  const burnRate = parseStartupNumberInput(values.monthlyBurnRate);
+  if (burnRate.error)
+    return { error: burnRate.error, field: "monthlyBurnRate" };
+  const runway = parseStartupNumberInput(values.runwayMonths, {
+    integer: true,
+  });
+  if (runway.error) return { error: runway.error, field: "runwayMonths" };
 
   return {
     data: {
@@ -143,6 +168,12 @@ function normalize(
       linkedinUrl: parseStartupTextInput(values.linkedinUrl),
       twitterUrl: parseStartupTextInput(values.twitterUrl),
       instagramUrl: parseStartupTextInput(values.instagramUrl),
+      fundingRaisedToDate: fundingRaised.value ?? null,
+      valuation: valuation.value ?? null,
+      monthlyBurnRate: burnRate.value ?? null,
+      runwayMonths: runway.value ?? null,
+      tractionHighlights: parseStartupTextInput(values.tractionHighlights),
+      pitchVideoUrl: parseStartupTextInput(values.pitchVideoUrl),
     },
   };
 }
@@ -228,6 +259,16 @@ function StartupForm({
       linkedinUrl: watched.linkedinUrl || null,
       twitterUrl: watched.twitterUrl || null,
       instagramUrl: watched.instagramUrl || null,
+      fundingRaisedToDate: watched.fundingRaisedToDate
+        ? Number(watched.fundingRaisedToDate)
+        : null,
+      valuation: watched.valuation ? Number(watched.valuation) : null,
+      monthlyBurnRate: watched.monthlyBurnRate
+        ? Number(watched.monthlyBurnRate)
+        : null,
+      runwayMonths: watched.runwayMonths ? Number(watched.runwayMonths) : null,
+      tractionHighlights: watched.tractionHighlights || null,
+      pitchVideoUrl: watched.pitchVideoUrl || null,
     }),
     [watched, logoUrl, coverImageUrl, pitchDeckPath, pitchDeckOriginalName],
   );
@@ -592,6 +633,106 @@ function StartupForm({
                 <p className="text-caption text-gray-400">Optional.</p>
               )}
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="fundingRaisedToDate">
+                Total funding raised to date (USD)
+              </Label>
+              <Input
+                id="fundingRaisedToDate"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                placeholder="e.g. 150000"
+                aria-invalid={!!form.formState.errors.fundingRaisedToDate}
+                {...form.register("fundingRaisedToDate")}
+              />
+              {form.formState.errors.fundingRaisedToDate ? (
+                <p className="text-caption text-destructive">
+                  {form.formState.errors.fundingRaisedToDate.message}
+                </p>
+              ) : (
+                <p className="text-caption text-gray-400">
+                  Optional. Across all prior rounds.
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="valuation">Current valuation (USD)</Label>
+              <Input
+                id="valuation"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                placeholder="e.g. 2000000"
+                aria-invalid={!!form.formState.errors.valuation}
+                {...form.register("valuation")}
+              />
+              {form.formState.errors.valuation ? (
+                <p className="text-caption text-destructive">
+                  {form.formState.errors.valuation.message}
+                </p>
+              ) : (
+                <p className="text-caption text-gray-400">Optional.</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="monthlyBurnRate">Monthly burn rate (USD)</Label>
+              <Input
+                id="monthlyBurnRate"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                placeholder="e.g. 8000"
+                aria-invalid={!!form.formState.errors.monthlyBurnRate}
+                {...form.register("monthlyBurnRate")}
+              />
+              {form.formState.errors.monthlyBurnRate ? (
+                <p className="text-caption text-destructive">
+                  {form.formState.errors.monthlyBurnRate.message}
+                </p>
+              ) : (
+                <p className="text-caption text-gray-400">Optional.</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="runwayMonths">Runway (months)</Label>
+              <Input
+                id="runwayMonths"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                step={1}
+                placeholder="e.g. 9"
+                aria-invalid={!!form.formState.errors.runwayMonths}
+                {...form.register("runwayMonths")}
+              />
+              {form.formState.errors.runwayMonths ? (
+                <p className="text-caption text-destructive">
+                  {form.formState.errors.runwayMonths.message}
+                </p>
+              ) : (
+                <p className="text-caption text-gray-400">Optional.</p>
+              )}
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="tractionHighlights">Traction highlights</Label>
+              <Textarea
+                id="tractionHighlights"
+                rows={3}
+                placeholder="Milestones or metrics worth calling out beyond the numbers above - e.g. growth rate, a flagship customer, a key partnership."
+                aria-invalid={!!form.formState.errors.tractionHighlights}
+                {...form.register("tractionHighlights")}
+              />
+              {form.formState.errors.tractionHighlights ? (
+                <p className="text-caption text-destructive">
+                  {form.formState.errors.tractionHighlights.message}
+                </p>
+              ) : (
+                <p className="text-caption text-gray-400">
+                  Optional. Up to 500 characters.
+                </p>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -629,6 +770,28 @@ function StartupForm({
               ) : (
                 <p className="text-caption text-gray-400">
                   Up to 600 characters.
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pitchVideoUrl">Pitch video link</Label>
+              <Input
+                id="pitchVideoUrl"
+                type="url"
+                placeholder="https://youtube.com/watch?v=..."
+                aria-invalid={!!form.formState.errors.pitchVideoUrl}
+                {...form.register("pitchVideoUrl")}
+              />
+              {form.formState.errors.pitchVideoUrl ? (
+                <p className="text-caption text-destructive">
+                  {form.formState.errors.pitchVideoUrl.message}
+                </p>
+              ) : (
+                <p className="text-caption text-gray-400">
+                  Optional. A link to a video hosted elsewhere (YouTube,
+                  Vimeo, Loom, etc) - PITCON doesn&apos;t host video
+                  directly.
                 </p>
               )}
             </div>

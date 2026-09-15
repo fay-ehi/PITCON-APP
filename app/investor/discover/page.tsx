@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 
 import { getCurrentUserProfile } from "@/lib/auth/session";
+import { createClient } from "@/lib/supabase/server";
 import {
   DISCOVER_PAGE_SIZE,
   getDiscoverableStartupById,
@@ -9,7 +11,9 @@ import {
   type DiscoverFilters,
 } from "@/lib/queries/discover";
 import { getOwnInterestForStartup } from "@/lib/queries/interests";
+import { getShortlistedStartupIds } from "@/lib/queries/shortlist";
 import { getIndustries, getStartupStages } from "@/lib/queries/profile";
+import { logStartupView } from "@/lib/analytics/track-view";
 import { isFundingBucketId } from "@/constants/funding-buckets";
 import { Container } from "@/components/shared/container";
 import { DiscoverControls } from "@/components/investor/discover-controls";
@@ -64,6 +68,20 @@ type DiscoverSearchParams = {
  * landing workspace. `current.profile.product_tour_completed` comes
  * from the same authenticated profile row already fetched below, so
  * showing the tour costs no extra query.
+ *
+ * Sprint 12 adds two more things here. First, `shortlistedIds` - the
+ * investor's entire shortlist, fetched once regardless of which
+ * startup (if any) is selected, so `DiscoverWorkspace` can mark
+ * already-shortlisted cards on first paint. Second, a Founder
+ * Analytics view log for `selectedStartup`, fired via `after()` so it
+ * never adds latency to this page's own response - the investor's own
+ * page load doesn't wait on it. That `after()` call is why `supabase`
+ * is created explicitly here rather than left to `logStartupView`
+ * itself: `cookies()` (which `createClient()` calls) can't be called
+ * *inside* `after()` in a Server Component per Next's docs, so the
+ * client has to be built during normal render and only the deferred
+ * `.insert()` call happens inside the callback - see
+ * lib/analytics/track-view.ts's top comment for the full reasoning.
  */
 export default async function InvestorDiscoverPage({
   searchParams,
@@ -85,15 +103,22 @@ export default async function InvestorDiscoverPage({
   const filters: DiscoverFilters = { q, industryId, stageId, country, funding };
   const hasActiveFilters = Boolean(q || industryId || stageId || country || funding);
 
-  const [{ startups, hasMore }, industries, stages, selectedStartup, ownInterest] = await Promise.all([
-    getDiscoverableStartups(filters, 0, DISCOVER_PAGE_SIZE),
-    getIndustries(),
-    getStartupStages(),
-    selectedStartupId ? getDiscoverableStartupById(selectedStartupId) : Promise.resolve(null),
-    selectedStartupId
-      ? getOwnInterestForStartup(current.userId, selectedStartupId)
-      : Promise.resolve(null),
-  ]);
+  const [{ startups, hasMore }, industries, stages, selectedStartup, ownInterest, shortlistedIds] =
+    await Promise.all([
+      getDiscoverableStartups(filters, 0, DISCOVER_PAGE_SIZE),
+      getIndustries(),
+      getStartupStages(),
+      selectedStartupId ? getDiscoverableStartupById(selectedStartupId) : Promise.resolve(null),
+      selectedStartupId
+        ? getOwnInterestForStartup(current.userId, selectedStartupId)
+        : Promise.resolve(null),
+      getShortlistedStartupIds(current.userId),
+    ]);
+
+  if (selectedStartup) {
+    const supabase = await createClient();
+    after(() => logStartupView(supabase, selectedStartup.id, current.userId));
+  }
 
   // The query string every card link, the dialog's "back" close
   // action, and "Clear search and filters" build on top of - current
@@ -139,6 +164,7 @@ export default async function InvestorDiscoverPage({
           selectedStartupId={selectedStartupId ?? null}
           selectedStartup={selectedStartup}
           ownInterestStatus={ownInterest?.status ?? null}
+          initialShortlistedIds={shortlistedIds}
           backHref={backHref}
         />
       </div>

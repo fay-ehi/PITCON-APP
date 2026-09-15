@@ -4,12 +4,17 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUserProfile } from "@/lib/auth/session";
 import { getPitchDeckSignedUrl, getStartupById } from "@/lib/queries/startup";
+import { getStartupAnalytics } from "@/lib/queries/analytics";
 import { calculateStartupCompletion } from "@/lib/startup/completion";
 import { Container } from "@/components/shared/container";
 import { Button } from "@/components/ui/button";
 import { StartupStatusBadge } from "@/components/startup/startup-status-badge";
 import { StartupPreview } from "@/components/startup/startup-preview";
 import { ProfileCompletionBar } from "@/components/profile/profile-completion-bar";
+import {
+  StartupAnalyticsCard,
+  StartupAnalyticsCardPlaceholder,
+} from "@/components/founder/startup-analytics-card";
 
 export const metadata: Metadata = {
   title: "Startup",
@@ -26,6 +31,11 @@ export const metadata: Metadata = {
  * instead of dropping them onto a chrome-less not-found page, and
  * mirrors `getStartupById`'s "wrong owner looks identical to
  * nonexistent" behavior.
+ *
+ * Sprint 12 adds the Insights card here - only fetched (and only
+ * rendered as the real card, vs. `StartupAnalyticsCardPlaceholder`)
+ * once the startup is published, since a draft can never have been
+ * viewed in Discover at all.
  */
 export default async function StartupViewPage({
   params,
@@ -43,6 +53,10 @@ export default async function StartupViewPage({
   const pitchDeckUrl = startup.pitchDeckPath
     ? await getPitchDeckSignedUrl(startup.pitchDeckPath)
     : null;
+  const analytics =
+    startup.status === "published"
+      ? await getStartupAnalytics(startup.id, current.userId)
+      : null;
 
   return (
     <Container className="max-w-2xl py-12">
@@ -67,6 +81,14 @@ export default async function StartupViewPage({
           className="mt-6"
         />
       )}
+
+      <div className="mt-8">
+        {analytics ? (
+          <StartupAnalyticsCard analytics={analytics} />
+        ) : (
+          <StartupAnalyticsCardPlaceholder />
+        )}
+      </div>
 
       <div className="mt-8">
         <StartupPreview startup={startup} pitchDeckUrl={pitchDeckUrl} />

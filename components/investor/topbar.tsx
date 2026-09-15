@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   Bell,
+  Bookmark,
   Heart,
   LogOut,
   MessageSquare,
@@ -53,6 +54,14 @@ import { signOutAction } from "@/lib/auth/actions";
  * `unreadMessageCount` is fetched server-side in app/investor/layout.tsx
  * (see `getInvestorUnreadConversationCount`) now that Messages has a
  * real data model behind it too.
+ *
+ * As of Sprint 12, a "My Shortlist" icon joins the same row, right
+ * before My Interests - same reasoning as My Interests' own Sprint 6
+ * placement (no sidebar to add a nav item to instead), and ordered
+ * ahead of it since bookmarking a startup is typically the earlier,
+ * lower-commitment step in an investor's funnel. No unread-style badge
+ * here - unlike interests/messages/notifications, a shortlist has no
+ * "new since you last looked" concept to badge.
  */
 function InvestorTopBar({
   fullName,
@@ -73,6 +82,13 @@ function InvestorTopBar({
         <Logo href="/investor/discover" />
 
         <div className="flex items-center gap-1">
+          <Link
+            href="/investor/shortlist"
+            aria-label="My Shortlist"
+            className="rounded-control flex size-10 items-center justify-center text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+          >
+            <Bookmark className="size-5" aria-hidden />
+          </Link>
           <Link
             href="/investor/interests"
             aria-label="My Interests"

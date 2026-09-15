@@ -38,6 +38,15 @@ export type StartupFormFields = {
   linkedinUrl: string | null;
   twitterUrl: string | null;
   instagramUrl: string | null;
+  /** Sprint 12 (richer startup profiles) - all four optional, never
+   * part of `STARTUP_MISSING_FIELD_LABELS` below, same "optional
+   * enrichment" treatment as annualRevenue/monthlyRevenue. */
+  fundingRaisedToDate: number | null;
+  valuation: number | null;
+  monthlyBurnRate: number | null;
+  runwayMonths: number | null;
+  tractionHighlights: string | null;
+  pitchVideoUrl: string | null;
 };
 
 /** The full startup as read back for the founder - form fields plus the

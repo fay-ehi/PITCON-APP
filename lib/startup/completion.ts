@@ -14,7 +14,9 @@ import type { StartupFormFields, StartupMissingField } from "@/types/startup";
  *
  * Deliberately excludes: website, annual revenue, monthly revenue,
  * cover image, and all three social links - all explicitly optional
- * per the planning document.
+ * per the planning document. Sprint 12's richer-profile fields
+ * (fundingRaisedToDate, valuation, monthlyBurnRate, runwayMonths,
+ * tractionHighlights, pitchVideoUrl) join that same optional set.
  */
 const REQUIRED_FIELDS: StartupMissingField[] = [
   "name",

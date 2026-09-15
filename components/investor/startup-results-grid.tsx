@@ -33,6 +33,8 @@ function StartupResultsGrid({
   selectedStartupId,
   onSelectStartup,
   baseQuery,
+  shortlistedIds,
+  onShortlistToggle,
 }: {
   initialStartups: StartupDetail[];
   initialHasMore: boolean;
@@ -42,6 +44,11 @@ function StartupResultsGrid({
   /** Current search/filter params serialized (no leading `?`, no
    * `startup` param) - each card's link is this plus its own `startup=id`. */
   baseQuery: string;
+  /** The investor's entire shortlist (not just this page's results) -
+   * see getShortlistedStartupIds. Owned by discover-workspace.tsx so it
+   * stays in sync with the preview dialog's own shortlist button. */
+  shortlistedIds: Set<string>;
+  onShortlistToggle: (startupId: string, shortlisted: boolean) => void;
 }) {
   const [startups, setStartups] = useState(initialStartups);
   const [hasMore, setHasMore] = useState(initialHasMore);
@@ -77,6 +84,8 @@ function StartupResultsGrid({
               href={href}
               selected={startup.id === selectedStartupId}
               onSelect={() => onSelectStartup(startup.id, href)}
+              shortlisted={shortlistedIds.has(startup.id)}
+              onShortlistToggle={onShortlistToggle}
             />
           );
         })}

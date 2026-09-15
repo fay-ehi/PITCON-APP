@@ -18,6 +18,7 @@
  *   - 20260812100000_investor_interest.sql               (Sprint 6)
  *   - 20260813090000_messaging.sql                        (Sprint 7)
  *   - 20260814090000_product_tour_state.sql               (Sprint 10)
+ *   - 20260901090000_startup_analytics_and_shortlist.sql   (Sprint 12)
  */
 export type Json =
   | string
@@ -293,6 +294,12 @@ export type Database = {
           linkedin_url: string | null;
           twitter_url: string | null;
           instagram_url: string | null;
+          funding_raised_to_date: number | null;
+          valuation: number | null;
+          monthly_burn_rate: number | null;
+          runway_months: number | null;
+          traction_highlights: string | null;
+          pitch_video_url: string | null;
           published_at: string | null;
           created_at: string;
           updated_at: string;
@@ -322,6 +329,12 @@ export type Database = {
           linkedin_url?: string | null;
           twitter_url?: string | null;
           instagram_url?: string | null;
+          funding_raised_to_date?: number | null;
+          valuation?: number | null;
+          monthly_burn_rate?: number | null;
+          runway_months?: number | null;
+          traction_highlights?: string | null;
+          pitch_video_url?: string | null;
           published_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -351,6 +364,12 @@ export type Database = {
           linkedin_url?: string | null;
           twitter_url?: string | null;
           instagram_url?: string | null;
+          funding_raised_to_date?: number | null;
+          valuation?: number | null;
+          monthly_burn_rate?: number | null;
+          runway_months?: number | null;
+          traction_highlights?: string | null;
+          pitch_video_url?: string | null;
           published_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -471,6 +490,81 @@ export type Database = {
             columns: ["startup_interest_id"];
             isOneToOne: false;
             referencedRelation: "startup_interests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      startup_views: {
+        Row: {
+          id: string;
+          startup_id: string;
+          investor_id: string;
+          viewed_on: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          startup_id: string;
+          investor_id: string;
+          viewed_on?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          startup_id?: string;
+          investor_id?: string;
+          viewed_on?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "startup_views_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "startup_views_investor_id_fkey";
+            columns: ["investor_id"];
+            isOneToOne: false;
+            referencedRelation: "investor_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      startup_shortlists: {
+        Row: {
+          id: string;
+          investor_id: string;
+          startup_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          investor_id: string;
+          startup_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          investor_id?: string;
+          startup_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "startup_shortlists_investor_id_fkey";
+            columns: ["investor_id"];
+            isOneToOne: false;
+            referencedRelation: "investor_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "startup_shortlists_startup_id_fkey";
+            columns: ["startup_id"];
+            isOneToOne: false;
+            referencedRelation: "startups";
             referencedColumns: ["id"];
           },
         ];

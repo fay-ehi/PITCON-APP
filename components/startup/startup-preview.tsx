@@ -120,22 +120,48 @@ function StartupPreview({
         <CardHeader>
           <CardTitle>Traction</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <CardContent className="flex flex-col gap-5">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <ProfileField
+              label="Annual revenue"
+              value={formatUsd(startup.annualRevenue)}
+            />
+            <ProfileField
+              label="Monthly revenue"
+              value={formatUsd(startup.monthlyRevenue)}
+            />
+            <ProfileField
+              label="Customers / users"
+              value={formatCount(startup.customerCount)}
+            />
+            <ProfileField
+              label="Employees"
+              value={formatCount(startup.employeeCount)}
+            />
+            <ProfileField
+              label="Total funding raised to date"
+              value={formatUsd(startup.fundingRaisedToDate)}
+            />
+            <ProfileField
+              label="Current valuation"
+              value={formatUsd(startup.valuation)}
+            />
+            <ProfileField
+              label="Monthly burn rate"
+              value={formatUsd(startup.monthlyBurnRate)}
+            />
+            <ProfileField
+              label="Runway"
+              value={
+                startup.runwayMonths !== null
+                  ? `${formatCount(startup.runwayMonths)} months`
+                  : null
+              }
+            />
+          </div>
           <ProfileField
-            label="Annual revenue"
-            value={formatUsd(startup.annualRevenue)}
-          />
-          <ProfileField
-            label="Monthly revenue"
-            value={formatUsd(startup.monthlyRevenue)}
-          />
-          <ProfileField
-            label="Customers / users"
-            value={formatCount(startup.customerCount)}
-          />
-          <ProfileField
-            label="Employees"
-            value={formatCount(startup.employeeCount)}
+            label="Traction highlights"
+            value={startup.tractionHighlights}
           />
         </CardContent>
       </Card>
@@ -161,6 +187,27 @@ function StartupPreview({
                 {startup.pitchDeckOriginalName ?? "View pitch deck"}
                 <ExternalLink className="size-3" aria-hidden />
               </Link>
+            ) : (
+              <span className="text-body text-gray-400 italic">
+                Not added yet
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-caption font-medium text-gray-500">
+              Pitch video
+            </span>
+            {startup.pitchVideoUrl ? (
+              <a
+                href={startup.pitchVideoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-small text-primary inline-flex w-fit items-center gap-1.5 hover:underline"
+              >
+                <Globe className="size-3.5" aria-hidden />
+                {startup.pitchVideoUrl}
+                <ExternalLink className="size-3" aria-hidden />
+              </a>
             ) : (
               <span className="text-body text-gray-400 italic">
                 Not added yet

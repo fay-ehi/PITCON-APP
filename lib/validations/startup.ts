@@ -88,6 +88,17 @@ export const startupSaveSchema = z.object({
   linkedinUrl: nullableUrl("LinkedIn link"),
   twitterUrl: nullableUrl("X (Twitter) link"),
   instagramUrl: nullableUrl("Instagram link"),
+  // Sprint 12 (richer startup profiles) - same "format only, never
+  // required" treatment as the rest of this schema; all four are
+  // entirely optional enrichment, matching the database migration's
+  // `startups_*_nonnegative`/`_length` checks rather than any
+  // publish-completeness rule.
+  fundingRaisedToDate: nullableNonNegativeAmount,
+  valuation: nullableNonNegativeAmount,
+  monthlyBurnRate: nullableNonNegativeAmount,
+  runwayMonths: nullableNonNegativeInteger,
+  tractionHighlights: nullableLongText(500, "Traction highlights"),
+  pitchVideoUrl: nullableUrl("pitch video link"),
 });
 
 export type StartupSaveInput = z.infer<typeof startupSaveSchema>;

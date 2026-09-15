@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProfileField } from "@/components/profile/profile-field";
 import { ExpressInterestButton } from "@/components/investor/express-interest-button";
+import { ShortlistButton } from "@/components/investor/shortlist-button";
 import { getDiscoverPitchDeckUrlAction } from "@/lib/discover/discover-actions";
 import { formatCount, formatLocation, formatUsd } from "@/lib/startup/format";
 import { getIndustryAccent } from "@/lib/startup/industry-accent";
@@ -60,18 +61,30 @@ import type { InterestStatus } from "@/types/interest";
  * to show it against yet), otherwise the signed-in investor's own
  * interest status for this startup - see discover-workspace.tsx's
  * `dialogOwnInterestStatus` for where that gating actually happens.
+ *
+ * Sprint 12's `shortlisted`/`onShortlistToggle` follow the same
+ * "purely controlled by the parent" rule as everything else here -
+ * discover-workspace.tsx computes `shortlisted` from its own
+ * `shortlistedIds` set (not gated on `loading`, since an empty/false
+ * default is a perfectly good value to render on a skeleton the button
+ * itself won't even appear on) so that toggling it here and toggling
+ * the matching card in the results list stay in sync automatically.
  */
 function DiscoverPreviewDialog({
   open,
   loading,
   startup,
   ownInterestStatus,
+  shortlisted,
+  onShortlistToggle,
   onOpenChange,
 }: {
   open: boolean;
   loading: boolean;
   startup: StartupDetail | null;
   ownInterestStatus: InterestStatus | null;
+  shortlisted: boolean;
+  onShortlistToggle: (startupId: string, shortlisted: boolean) => void;
   onOpenChange: (open: boolean) => void;
 }) {
   return (
@@ -107,7 +120,12 @@ function DiscoverPreviewDialog({
           {loading ? (
             <PreviewSkeleton />
           ) : startup ? (
-            <PreviewContent startup={startup} ownInterestStatus={ownInterestStatus} />
+            <PreviewContent
+              startup={startup}
+              ownInterestStatus={ownInterestStatus}
+              shortlisted={shortlisted}
+              onShortlistToggle={onShortlistToggle}
+            />
           ) : (
             <NotFoundState />
           )}
@@ -156,9 +174,13 @@ function PreviewSkeleton() {
 function PreviewContent({
   startup,
   ownInterestStatus,
+  shortlisted,
+  onShortlistToggle,
 }: {
   startup: StartupDetail;
   ownInterestStatus: InterestStatus | null;
+  shortlisted: boolean;
+  onShortlistToggle: (startupId: string, shortlisted: boolean) => void;
 }) {
   const location = formatLocation(startup.city, startup.country);
   const hasLinks = Boolean(startup.linkedinUrl || startup.twitterUrl || startup.instagramUrl);
@@ -175,31 +197,39 @@ function PreviewContent({
       )}
 
       <div className="flex flex-col gap-4">
-        <div className="flex items-start gap-4">
-          <div className={`flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-card ${accent.solidBg}`}>
-            {startup.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={startup.logoUrl} alt="" className="size-full object-cover" />
-            ) : (
-              <Icon className={`size-6 ${accent.solidText}`} aria-hidden />
-            )}
-          </div>
-          <div className="flex flex-col gap-1">
-            <h2 className="text-h3 font-semibold text-gray-900">{startup.name}</h2>
-            {startup.tagline && <p className="text-small text-gray-500">{startup.tagline}</p>}
-            <div className="flex flex-wrap items-center gap-2 pt-0.5">
-              {startup.industry && (
-                <span className={`text-caption inline-flex items-center rounded-full px-2 py-0.5 font-medium ${accent.softBg} ${accent.softText}`}>
-                  {startup.industry.name}
-                </span>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className={`flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-card ${accent.solidBg}`}>
+              {startup.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={startup.logoUrl} alt="" className="size-full object-cover" />
+              ) : (
+                <Icon className={`size-6 ${accent.solidText}`} aria-hidden />
               )}
-              <span className="text-caption flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-500">
-                {startup.stage && <span>{startup.stage.name}</span>}
-                {startup.stage && location && <span aria-hidden>&middot;</span>}
-                {location && <span>{location}</span>}
-              </span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <h2 className="text-h3 font-semibold text-gray-900">{startup.name}</h2>
+              {startup.tagline && <p className="text-small text-gray-500">{startup.tagline}</p>}
+              <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                {startup.industry && (
+                  <span className={`text-caption inline-flex items-center rounded-full px-2 py-0.5 font-medium ${accent.softBg} ${accent.softText}`}>
+                    {startup.industry.name}
+                  </span>
+                )}
+                <span className="text-caption flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-500">
+                  {startup.stage && <span>{startup.stage.name}</span>}
+                  {startup.stage && location && <span aria-hidden>&middot;</span>}
+                  {location && <span>{location}</span>}
+                </span>
+              </div>
             </div>
           </div>
+          <ShortlistButton
+            startupId={startup.id}
+            initialShortlisted={shortlisted}
+            onToggle={onShortlistToggle}
+            className="shrink-0"
+          />
         </div>
 
         {startup.websiteUrl && (
@@ -231,7 +261,17 @@ function PreviewContent({
           <ProfileField label="Employees" value={formatCount(startup.employeeCount)} />
           <ProfileField label="Annual revenue" value={formatUsd(startup.annualRevenue)} />
           <ProfileField label="Monthly revenue" value={formatUsd(startup.monthlyRevenue)} />
+          <ProfileField label="Funding raised to date" value={formatUsd(startup.fundingRaisedToDate)} />
+          <ProfileField label="Current valuation" value={formatUsd(startup.valuation)} />
+          <ProfileField label="Monthly burn rate" value={formatUsd(startup.monthlyBurnRate)} />
+          <ProfileField
+            label="Runway"
+            value={startup.runwayMonths !== null ? `${formatCount(startup.runwayMonths)} months` : null}
+          />
         </div>
+        {startup.tractionHighlights && (
+          <ProfileField label="Traction highlights" value={startup.tractionHighlights} />
+        )}
       </div>
 
       <div className="flex flex-col gap-3 border-t border-border pt-6">
@@ -247,6 +287,22 @@ function PreviewContent({
           <span className="text-body text-gray-400 italic">Not added yet</span>
         )}
       </div>
+
+      {startup.pitchVideoUrl && (
+        <div className="flex flex-col gap-3 border-t border-border pt-6">
+          <SectionHeading>Pitch Video</SectionHeading>
+          <a
+            href={startup.pitchVideoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-fit items-center gap-1.5 text-small text-primary hover:underline"
+          >
+            <Globe className="size-3.5" aria-hidden />
+            {startup.pitchVideoUrl}
+            <ExternalLink className="size-3" aria-hidden />
+          </a>
+        </div>
+      )}
 
       {hasLinks && (
         <div className="flex flex-col gap-3 border-t border-border pt-6">

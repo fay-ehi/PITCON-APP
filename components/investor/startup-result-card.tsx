@@ -4,6 +4,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatUsd } from "@/lib/startup/format";
 import { getIndustryAccent } from "@/lib/startup/industry-accent";
+import { ShortlistButton } from "@/components/investor/shortlist-button";
 import type { StartupDetail } from "@/types/startup";
 
 /**
@@ -21,11 +22,15 @@ function StartupResultCard({
   href,
   selected,
   onSelect,
+  shortlisted,
+  onShortlistToggle,
 }: {
   startup: StartupDetail;
   href: string;
   selected: boolean;
   onSelect: () => void;
+  shortlisted: boolean;
+  onShortlistToggle: (startupId: string, shortlisted: boolean) => void;
 }) {
   const meta = [startup.stage?.name, startup.country].filter(Boolean).join(" \u00b7 ");
   const funding = formatUsd(startup.fundingAmountSought);
@@ -51,63 +56,79 @@ function StartupResultCard({
   }
 
   return (
-    <Link
-      href={href}
-      scroll={false}
-      onClick={handleClick}
-      aria-current={selected ? "true" : undefined}
-      className={cn(
-        "relative flex flex-col gap-4 overflow-hidden rounded-card bg-white p-5 transition-all duration-200 sm:flex-row sm:items-start sm:gap-5 lg:p-6",
-        "outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
-        selected
-          ? "shadow-strong ring-2 ring-primary bg-primary-50/40"
-          : "shadow-subtle hover:shadow-medium",
-      )}
-    >
-      <div aria-hidden className={cn("absolute inset-y-0 left-0 w-1.5", accent.solidBg)} />
-
-      <div className={cn("ml-1.5 flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-card", accent.solidBg)}>
-        {startup.logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={startup.logoUrl} alt="" className="size-full object-cover" />
-        ) : (
-          <Icon className={cn("size-5", accent.solidText)} aria-hidden />
+    // The Sprint 12 shortlist button below is a real `<button>`, and a
+    // `<button>` nested inside this card's `<a>` (via next/link) would
+    // be invalid HTML - two interactive elements, one inside the
+    // other, which confuses keyboard/screen-reader activation. Instead
+    // the button is a plain sibling of the Link, overlaid via absolute
+    // positioning on this wrapping `relative` div, so clicking it never
+    // reaches the Link underneath (browsers dispatch the click to
+    // whichever element is topmost at that point, not to the anchor).
+    <div className="relative">
+      <Link
+        href={href}
+        scroll={false}
+        onClick={handleClick}
+        aria-current={selected ? "true" : undefined}
+        className={cn(
+          "relative flex flex-col gap-4 overflow-hidden rounded-card bg-white p-5 transition-all duration-200 sm:flex-row sm:items-start sm:gap-5 lg:p-6",
+          "outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
+          selected
+            ? "shadow-strong ring-2 ring-primary bg-primary-50/40"
+            : "shadow-subtle hover:shadow-medium",
         )}
-      </div>
+      >
+        <div aria-hidden className={cn("absolute inset-y-0 left-0 w-1.5", accent.solidBg)} />
 
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
-          <div className="min-w-0">
-            <p className="truncate text-body font-semibold text-gray-900">{startup.name}</p>
-            {startup.tagline && (
-              <p className="truncate text-small text-gray-500">{startup.tagline}</p>
+        <div className={cn("ml-1.5 flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-card", accent.solidBg)}>
+          {startup.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={startup.logoUrl} alt="" className="size-full object-cover" />
+          ) : (
+            <Icon className={cn("size-5", accent.solidText)} aria-hidden />
+          )}
+        </div>
+
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 pr-11">
+            <div className="min-w-0">
+              <p className="truncate text-body font-semibold text-gray-900">{startup.name}</p>
+              {startup.tagline && (
+                <p className="truncate text-small text-gray-500">{startup.tagline}</p>
+              )}
+            </div>
+            {funding && (
+              <p className="shrink-0 text-small text-gray-700">
+                Raising <span className="font-medium">{funding}</span>
+              </p>
             )}
           </div>
-          {funding && (
-            <p className="shrink-0 text-small text-gray-700">
-              Raising <span className="font-medium">{funding}</span>
-            </p>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {startup.industry && (
+              <span className={cn("text-caption inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-medium", accent.softBg, accent.softText)}>
+                {startup.industry.name}
+              </span>
+            )}
+            {meta && <span className="text-caption text-gray-400">{meta}</span>}
+          </div>
+
+          {startup.description && (
+            <p className="line-clamp-2 text-small text-gray-500">{startup.description}</p>
           )}
+
+          <span className="mt-1 inline-flex w-fit items-center gap-1 text-small font-medium text-primary">
+            View Startup <span aria-hidden>&rarr;</span>
+          </span>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {startup.industry && (
-            <span className={cn("text-caption inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-medium", accent.softBg, accent.softText)}>
-              {startup.industry.name}
-            </span>
-          )}
-          {meta && <span className="text-caption text-gray-400">{meta}</span>}
-        </div>
-
-        {startup.description && (
-          <p className="line-clamp-2 text-small text-gray-500">{startup.description}</p>
-        )}
-
-        <span className="mt-1 inline-flex w-fit items-center gap-1 text-small font-medium text-primary">
-          View Startup <span aria-hidden>&rarr;</span>
-        </span>
-      </div>
-    </Link>
+      </Link>
+      <ShortlistButton
+        startupId={startup.id}
+        initialShortlisted={shortlisted}
+        onToggle={onShortlistToggle}
+        className="absolute right-4 top-4 sm:right-5 sm:top-5 lg:right-6 lg:top-6"
+      />
+    </div>
   );
 }
 

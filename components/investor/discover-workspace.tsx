@@ -1,6 +1,6 @@
 "use client";
 
-import { useOptimistic, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { StartupResultsGrid } from "@/components/investor/startup-results-grid";
@@ -40,6 +40,16 @@ import type { InterestStatus } from "@/types/interest";
  * nothing to show it against while the dialog is still on its loading
  * skeleton) and not after (a flash of "no interest yet" on a startup
  * the investor already expressed interest in would be wrong).
+ *
+ * Sprint 12's `shortlistedIds`, by contrast, is deliberately NOT gated
+ * behind `dialogLoading` the way interest status is: it's the
+ * investor's entire shortlist (getShortlistedStartupIds), independent
+ * of which startup is selected, so both the grid and the dialog can
+ * read it directly. It's lifted into `useState` here (rather than
+ * living in the grid or the dialog alone) specifically so toggling the
+ * shortlist button in one place - say, the preview dialog - is
+ * immediately reflected in the other - the matching card in the list
+ * behind it - without a round trip to the server.
  */
 function DiscoverWorkspace({
   initialStartups,
@@ -51,6 +61,7 @@ function DiscoverWorkspace({
   selectedStartupId,
   selectedStartup,
   ownInterestStatus,
+  initialShortlistedIds,
   backHref,
 }: {
   initialStartups: StartupDetail[];
@@ -69,6 +80,10 @@ function DiscoverWorkspace({
    * `null` while unselected, or if the investor hasn't expressed
    * interest in it yet. See `getOwnInterestForStartup`. */
   ownInterestStatus: InterestStatus | null;
+  /** The investor's entire shortlist, from getShortlistedStartupIds -
+   * not scoped to the current page of results. See the class comment
+   * above. */
+  initialShortlistedIds: string[];
   backHref: string;
 }) {
   const router = useRouter();
@@ -77,6 +92,21 @@ function DiscoverWorkspace({
     selectedStartupId,
     (_current, next) => next,
   );
+  const [shortlistedIds, setShortlistedIds] = useState(
+    () => new Set(initialShortlistedIds),
+  );
+
+  function handleShortlistToggle(startupId: string, shortlisted: boolean) {
+    setShortlistedIds((prev) => {
+      const next = new Set(prev);
+      if (shortlisted) {
+        next.add(startupId);
+      } else {
+        next.delete(startupId);
+      }
+      return next;
+    });
+  }
 
   function selectStartup(startupId: string, href: string) {
     startTransition(() => {
@@ -112,6 +142,8 @@ function DiscoverWorkspace({
           selectedStartupId={optimisticId}
           onSelectStartup={selectStartup}
           baseQuery={baseQuery}
+          shortlistedIds={shortlistedIds}
+          onShortlistToggle={handleShortlistToggle}
         />
       ) : (
         <DiscoverEmptyState hasActiveFilters={hasActiveFilters} clearHref={clearFiltersHref} />
@@ -122,6 +154,8 @@ function DiscoverWorkspace({
         loading={dialogLoading}
         startup={dialogStartup}
         ownInterestStatus={dialogOwnInterestStatus}
+        shortlisted={dialogStartup ? shortlistedIds.has(dialogStartup.id) : false}
+        onShortlistToggle={handleShortlistToggle}
         onOpenChange={(next) => {
           if (!next) closePreview();
         }}
