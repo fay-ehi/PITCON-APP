@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Profile, UserRole } from "@/types/profile";
+import type { Profile } from "@/types/profile";
+
+export { roleHomePath } from "@/lib/auth/role-home-path";
 
 /**
  * The signed-in user's auth identity plus their application profile
@@ -40,11 +42,3 @@ export async function getCurrentUserProfile(): Promise<{
   return { userId: user.id, email: user.email, profile };
 }
 
-/** Where a signed-in user of a given role should land. As of Sprint 4,
- * a founder's home is the My Startups workspace - `/founder` itself is
- * kept alive only as a redirect to here (see app/founder/page.tsx), for
- * old links/bookmarks. As of Sprint 5, an investor's home is the
- * Discover workspace, for the same reason - see app/investor/page.tsx. */
-export function roleHomePath(role: UserRole): string {
-  return role === "founder" ? "/founder/startups" : "/investor/discover";
-}

@@ -2,18 +2,23 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 import { fetchWithTimeout } from "@/lib/supabase/fetch-with-timeout";
+import { roleHomePath } from "@/lib/auth/role-home-path";
+import type { UserRole } from "@/types/profile";
 
 /**
  * Next.js 16 renamed `middleware.ts` -> `proxy.ts` (exported function must
  * be named `proxy`). This runs on every request matched below.
  *
- * Two responsibilities: refresh the Supabase auth session/cookies on
- * every request, and redirect signed-out visitors away from every
- * `/founder` and `/investor` route (see "Route protection" below). It
- * does NOT redirect signed-in users away from auth pages — that's each
- * auth page's own `getCurrentUserProfile()` + `roleHomePath()` check
- * (see app/(auth)/login/page.tsx and friends), and it does NOT check
- * founder-vs-investor role - see the note on that below.
+ * Three responsibilities: refresh the Supabase auth session/cookies on
+ * every request, redirect signed-out visitors away from every
+ * `/founder` and `/investor` route (see "Route protection" below), and
+ * bounce signed-in visitors off the marketing home straight into their
+ * app (see "Signed-in home redirect" below). It does NOT redirect
+ * signed-in users away from auth pages — that's still each auth page's
+ * own `getCurrentUserProfile()` + `roleHomePath()` check (see
+ * app/(auth)/login/page.tsx and friends) - and it does NOT check
+ * founder-vs-investor role for route protection - see the note on that
+ * below.
  */
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -65,6 +70,32 @@ export async function proxy(request: NextRequest) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // --- Signed-in home redirect ---
+  // The marketing home page (`app/(marketing)/page.tsx`) already redirects
+  // a signed-in visitor to their app itself, via
+  // `getCurrentUserProfile()` + `roleHomePath()`. But that check runs
+  // inside an async Server Component, and that route has a
+  // `loading.tsx`, so Next paints the marketing layout (header + footer)
+  // and the loading skeleton immediately, then redirects once the check
+  // resolves - a visible flash of the marketing chrome, then a second
+  // flash of the destination layout's own nav, before the real page
+  // shows. Doing it here instead means the redirect happens before any
+  // HTML is sent, so neither flash occurs.
+  //
+  // `role` is read from the JWT's `user_metadata` (set once at signup by
+  // `handle_new_user()`, see the Sprint 1 migration, and never mutated
+  // afterwards) rather than a `profiles` query, to keep this check as
+  // cheap as the route-protection one above. This is only ever used to
+  // pick a redirect destination, never to gate access - the page-level
+  // check above (backed by the real `profiles.role` column) still
+  // decides what a founder vs. investor can actually see.
+  if (pathname === "/" && user) {
+    const role = user.user_metadata?.role as UserRole | undefined;
+    if (role === "founder" || role === "investor") {
+      return NextResponse.redirect(new URL(roleHomePath(role), request.url));
+    }
   }
 
   return supabaseResponse;

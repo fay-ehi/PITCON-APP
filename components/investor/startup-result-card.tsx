@@ -91,7 +91,7 @@ function StartupResultCard({
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 pr-11">
+          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
             <div className="min-w-0">
               <p className="flex items-center gap-1 text-body font-semibold text-gray-900">
                 <span className="truncate">{startup.name}</span>
@@ -121,7 +121,7 @@ function StartupResultCard({
             <p className="line-clamp-2 text-small text-gray-500">{startup.description}</p>
           )}
 
-          <span className="mt-1 inline-flex w-fit items-center gap-1 text-small font-medium text-primary">
+          <span className="mt-1 inline-flex w-fit items-center gap-1 pr-11 text-small font-medium text-primary">
             View Startup <span aria-hidden>&rarr;</span>
           </span>
         </div>
@@ -130,7 +130,7 @@ function StartupResultCard({
         startupId={startup.id}
         initialShortlisted={shortlisted}
         onToggle={onShortlistToggle}
-        className="absolute right-4 top-4 sm:right-5 sm:top-5 lg:right-6 lg:top-6"
+        className="absolute right-4 bottom-4 sm:right-5 sm:bottom-5 lg:right-6 lg:bottom-6"
       />
     </div>
   );

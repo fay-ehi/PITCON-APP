@@ -50,12 +50,7 @@ function EngagementStatsLoader({
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex flex-col gap-2">
-        <Skeleton className="h-4 w-40" />
-        <Skeleton className="h-4 w-52" />
-      </div>
-    );
+    return <Skeleton className="h-4 w-40" />;
   }
 
   // A failed/unauthorized lookup fails quietly rather than showing an

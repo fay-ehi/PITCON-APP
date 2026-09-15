@@ -1,4 +1,4 @@
-import { CalendarDays, MessageCircle, Sparkles } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 
 import { formatMonthYear } from "@/lib/format/date";
 import type { EngagementSummary } from "@/types/reputation";
@@ -9,38 +9,19 @@ import type { EngagementSummary } from "@/types/reputation";
  * comment). Shown to a founder about an investor (My Interests) and to
  * an investor about a founder (Discover), in the same spot each side
  * is already deciding "should I engage with this person."
+ *
+ * Only the member-since date is surfaced here - the interest-count and
+ * conversation-activity lines were removed per product feedback.
+ * `EngagementSummary.interestCount` / `.engagementRate` are still
+ * fetched (see types/reputation.ts and lib/queries/reputation.ts) but
+ * intentionally unused below; leaving the fetch alone keeps this a
+ * display-only change.
  */
 function EngagementStats({ summary }: { summary: EngagementSummary }) {
   return (
-    <div className="flex flex-col gap-2 text-small text-gray-600">
-      <div className="flex items-center gap-2">
-        <CalendarDays className="size-4 shrink-0 text-gray-400" aria-hidden />
-        <span>On PITCON since {formatMonthYear(summary.memberSince)}</span>
-      </div>
-
-      {summary.interestCount !== null && (
-        <div className="flex items-center gap-2">
-          <Sparkles className="size-4 shrink-0 text-gray-400" aria-hidden />
-          <span>
-            Expressed interest in {summary.interestCount}{" "}
-            {summary.interestCount === 1 ? "startup" : "startups"} on PITCON
-          </span>
-        </div>
-      )}
-
-      <div className="flex items-center gap-2">
-        <MessageCircle className="size-4 shrink-0 text-gray-400" aria-hidden />
-        {summary.engagementRate ? (
-          <span>
-            Active in {summary.engagementRate.activeConversations} of{" "}
-            {summary.engagementRate.totalConversations}{" "}
-            {summary.engagementRate.totalConversations === 1 ? "conversation" : "conversations"} on
-            PITCON
-          </span>
-        ) : (
-          <span>No conversations on PITCON yet</span>
-        )}
-      </div>
+    <div className="flex items-center gap-2 text-small text-gray-600">
+      <CalendarDays className="size-4 shrink-0 text-gray-400" aria-hidden />
+      <span>On PITCON since {formatMonthYear(summary.memberSince)}</span>
     </div>
   );
 }
