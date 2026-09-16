@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {
@@ -13,14 +15,20 @@ import { UnreadBadge } from "@/components/shared/unread-badge";
 
 /**
  * The Founder workspace's persistent navigation - "Where can I go?" (see
- * the Sprint 4 brief's "IMPORTANT NAVIGATION PRINCIPLE"). One component
- * handles both the desktop rendering (icon + label, ~15rem wide) and the
- * compact/mobile rendering (icon-only, ~4rem, Pinterest-style) purely
- * through the `lg:` breakpoint - there is no JS-driven collapse and,
- * per the brief's explicit "do NOT implement a hamburger navigation
- * drawer," no hamburger/drawer/bottom-tab-bar variant exists at any
- * width. The sidebar is always visible; only its width and whether
- * labels are painted changes.
+ * the Sprint 4 brief's "IMPORTANT NAVIGATION PRINCIPLE").
+ *
+ * UPDATED (mobile nav revamp): below `lg` this is now a JS-driven
+ * off-canvas drawer instead of the old always-visible icon-only rail -
+ * closed by default, opened via the hamburger button in
+ * `FounderTopBar`, and closed again on backdrop click, the X button, or
+ * navigating to a new route. `isOpen`/`onClose` are lifted up into
+ * `FounderShell` so the topbar's hamburger and this drawer share one
+ * source of truth. At `lg` and above the drawer behavior is inert
+ * (`lg:translate-x-0 lg:sticky`) and the sidebar renders exactly as
+ * before: a permanent w-60 rail with icon + label.
+ *
+ * The logo now always renders the full "PITCON" wordmark - there's no
+ * more icon-only compact state to abbreviate it for.
  *
  * As of Sprint 7, Messages carries a real unread-count badge -
  * `unreadMessageCount` is fetched server-side in app/founder/layout.tsx
@@ -30,52 +38,86 @@ import { UnreadBadge } from "@/components/shared/unread-badge";
  */
 function FounderSidebar({
   unreadMessageCount,
+  isOpen,
+  onClose,
 }: {
   unreadMessageCount: number;
+  isOpen: boolean;
+  onClose: () => void;
 }) {
   const pathname = usePathname();
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);
 
+  // Auto-close the mobile drawer whenever the route changes (tapping a
+  // nav link should navigate AND collapse the drawer, not leave it open
+  // over the new page).
+  useEffect(() => {
+    onClose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
   return (
-    <aside
-      aria-label="Founder navigation"
-      className="border-border sticky top-0 z-20 flex h-svh w-16 shrink-0 flex-col border-r bg-white lg:w-60"
-    >
-      <Link
-        href="/founder/startups"
-        className="border-border flex h-16 shrink-0 items-center justify-center border-b px-2 lg:justify-start lg:px-5"
+    <>
+      {/* Backdrop - mobile only, click-to-close, invisible/inert at lg+ */}
+      <div
+        aria-hidden
+        onClick={onClose}
+        className={cn(
+          "fixed inset-0 z-30 bg-gray-900/40 transition-opacity lg:hidden",
+          isOpen ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
+      />
+
+      <aside
+        aria-label="Founder navigation"
+        className={cn(
+          "border-border fixed inset-y-0 left-0 z-40 flex h-svh w-60 shrink-0 -translate-x-full flex-col border-r bg-white transition-transform duration-200 ease-out lg:sticky lg:top-0 lg:z-20 lg:translate-x-0",
+          isOpen && "translate-x-0",
+        )}
       >
-        <span className="text-h3 text-primary font-bold lg:hidden" aria-hidden>
-          P
-        </span>
-        <span className="text-h3 hidden font-bold text-gray-900 lg:inline">
-          PIT<span className="text-primary">CON</span>
-        </span>
-        <span className="sr-only">PITCON — My Startups</span>
-      </Link>
+        <div className="border-border flex h-16 shrink-0 items-center justify-between border-b px-5">
+          <Link
+            href="/founder/startups"
+            className="flex items-center"
+            aria-label="PITCON — My Startups"
+          >
+            <span className="text-h3 font-bold text-gray-900">
+              PIT<span className="text-primary">CON</span>
+            </span>
+          </Link>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close navigation"
+            className="rounded-control -mr-1.5 flex size-9 items-center justify-center text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 lg:hidden"
+          >
+            <X className="size-5" aria-hidden />
+          </button>
+        </div>
 
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-2 py-4">
-        {FOUNDER_NAV_ITEMS.map((item) => (
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-2 py-4">
+          {FOUNDER_NAV_ITEMS.map((item) => (
+            <SidebarLink
+              key={item.href}
+              item={item}
+              active={isActive(item.href)}
+              badgeCount={
+                item.href === "/founder/messages" ? unreadMessageCount : 0
+              }
+            />
+          ))}
+        </nav>
+
+        <div className="border-border shrink-0 border-t px-2 py-3">
           <SidebarLink
-            key={item.href}
-            item={item}
-            active={isActive(item.href)}
-            badgeCount={
-              item.href === "/founder/messages" ? unreadMessageCount : 0
-            }
+            item={FOUNDER_SETTINGS_NAV_ITEM}
+            active={isActive(FOUNDER_SETTINGS_NAV_ITEM.href)}
           />
-        ))}
-      </nav>
-
-      <div className="border-border shrink-0 border-t px-2 py-3">
-        <SidebarLink
-          item={FOUNDER_SETTINGS_NAV_ITEM}
-          active={isActive(FOUNDER_SETTINGS_NAV_ITEM.href)}
-        />
-      </div>
-    </aside>
+        </div>
+      </aside>
+    </>
   );
 }
 
@@ -98,7 +140,7 @@ function SidebarLink({
       aria-current={active ? "page" : undefined}
       aria-label={badgeCount > 0 ? label : undefined}
       className={cn(
-        "group rounded-control relative flex items-center justify-center gap-3 px-3 py-2.5 transition-colors lg:justify-start",
+        "group rounded-control relative flex items-center gap-3 px-3 py-2.5 transition-colors",
         active
           ? "bg-primary-50 text-primary-700"
           : "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
@@ -121,22 +163,11 @@ function SidebarLink({
       </span>
       <span
         className={cn(
-          "text-small hidden truncate lg:inline",
+          "text-small truncate",
           active ? "font-semibold" : "font-medium",
         )}
       >
         {item.label}
-      </span>
-      <span className="sr-only lg:hidden">{label}</span>
-
-      {/* Hover/focus tooltip for the icon-only compact rendering — the
-          sr-only span above already covers screen readers, so this is
-          marked aria-hidden to avoid the label being announced twice. */}
-      <span
-        aria-hidden="true"
-        className="rounded-control text-caption shadow-medium pointer-events-none absolute left-full z-30 ml-2 bg-gray-900 px-2 py-1 whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 lg:hidden"
-      >
-        {label}
       </span>
     </Link>
   );

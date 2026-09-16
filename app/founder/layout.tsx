@@ -4,16 +4,21 @@ import * as Sentry from "@sentry/nextjs";
 import { getCurrentUserProfile, roleHomePath } from "@/lib/auth/session";
 import { getUnreadNotificationCount } from "@/lib/queries/notifications";
 import { getFounderUnreadConversationCount } from "@/lib/queries/messages";
-import { FounderSidebar } from "@/components/founder/sidebar";
-import { FounderTopBar } from "@/components/founder/topbar";
+import { FounderShell } from "@/components/founder/shell";
 
 /**
  * The Sprint 4 Founder application shell:
  *
  *   ApplicationShell
- *   ├── Sidebar        (components/founder/sidebar.tsx)
- *   ├── TopBar          (components/founder/topbar.tsx)
- *   └── children         — the currently routed workspace section
+ *   └── FounderShell      (components/founder/shell.tsx) — client wrapper
+ *       ├── Sidebar        (components/founder/sidebar.tsx)
+ *       ├── TopBar          (components/founder/topbar.tsx)
+ *       └── children         — the currently routed workspace section
+ *
+ * This layout stays a server component (it fetches the profile + unread
+ * counts below), so the mobile nav drawer's open/closed state lives one
+ * level down in `FounderShell`, a client component that owns that state
+ * and passes it to Sidebar/TopBar as props.
  *
  * Per the brief, this whole layout *is* the Founder dashboard - there is
  * no separate "/founder dashboard" page with its own widgets. Every
@@ -54,16 +59,13 @@ export default async function FounderLayout({
   ]);
 
   return (
-    <div className="flex min-h-svh bg-gray-50">
-      <FounderSidebar unreadMessageCount={unreadMessageCount} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <FounderTopBar
-          fullName={current.profile.full_name}
-          avatarUrl={current.profile.avatar_url}
-          unreadNotificationCount={unreadNotificationCount}
-        />
-        <main className="flex-1">{children}</main>
-      </div>
-    </div>
+    <FounderShell
+      unreadMessageCount={unreadMessageCount}
+      fullName={current.profile.full_name}
+      avatarUrl={current.profile.avatar_url}
+      unreadNotificationCount={unreadNotificationCount}
+    >
+      {children}
+    </FounderShell>
   );
 }
