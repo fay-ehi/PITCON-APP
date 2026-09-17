@@ -51,6 +51,15 @@ import type { ConversationDetail, MessageSummary } from "@/types/message";
  * timestamp) or, on failure, marks it `failed` with a "Retry" affordance
  * that resends the same content against the same temporary id (brief's
  * "Handle failed sends gracefully" / "Retry" test case).
+ *
+ * HEADER "view startup" ACCESS: the text "View startup" link next to
+ * the header only renders at `sm:` and above - on a phone there was no
+ * way to reach the startup's profile from an investor's conversation
+ * at all. The startup logo (investor role's header avatar) is now
+ * itself a `Link` to `startupProfileHref` whenever one exists, mirroring
+ * how the founder-role header avatar already links to the other
+ * participant's investor profile - so the logo is a real, always-visible
+ * tap target on every breakpoint, not just an icon.
  */
 function ConversationThread({
   basePath,
@@ -60,6 +69,7 @@ function ConversationThread({
   hasMoreMessages,
   currentUserId,
   startupProfileHref,
+  onBack,
 }: {
   basePath: "/founder/messages" | "/investor/messages";
   role: "founder" | "investor";
@@ -72,6 +82,14 @@ function ConversationThread({
    * this control, and `MessagesWorkspace`'s founder-gets-none reasoning)
    * - resolved by `MessagesWorkspace`. */
   startupProfileHref: string | null;
+  /** Mirrors `ConversationList`'s `onSelect`: the mobile "back to
+   * conversations" link below is still a real `<Link href={basePath}>`
+   * (so it works with JS disabled, keyboard nav, etc.), but an ordinary
+   * left-click also calls this immediately, which is what lets the list
+   * pane reappear the instant you tap back instead of sitting on the
+   * (now stale) thread until the navigation resolves - see
+   * `MessagesWorkspace`'s top comment. */
+  onBack: () => void;
 }) {
   const [messages, setMessages] = useState<ThreadMessage[]>(initialMessages);
   const [hasMore, setHasMore] = useState(hasMoreMessages);
@@ -219,6 +237,20 @@ function ConversationThread({
       <div className="border-border flex items-center gap-3 border-b p-4">
         <Link
           href={basePath}
+          onClick={(event) => {
+            if (
+              event.defaultPrevented ||
+              event.button !== 0 ||
+              event.metaKey ||
+              event.ctrlKey ||
+              event.shiftKey ||
+              event.altKey
+            ) {
+              return;
+            }
+            event.preventDefault();
+            onBack();
+          }}
           aria-label="Back to conversations"
           className="rounded-control flex size-8 shrink-0 items-center justify-center text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 md:hidden"
         >
@@ -243,6 +275,25 @@ function ConversationThread({
                   .toUpperCase() || "?"}
               </AvatarFallback>
             </Avatar>
+          </Link>
+        ) : startupProfileHref ? (
+          <Link
+            href={startupProfileHref}
+            aria-label={`View ${conversation.startup.name || "startup"}'s profile`}
+            className="rounded-card outline-none focus-visible:ring-2 focus-visible:ring-primary/30 shrink-0"
+          >
+            <div className="rounded-card border-border flex size-9 shrink-0 items-center justify-center overflow-hidden border bg-gray-100">
+              {conversation.startup.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={conversation.startup.logoUrl}
+                  alt=""
+                  className="size-full object-cover"
+                />
+              ) : (
+                <Building2 className="size-4 text-gray-300" aria-hidden />
+              )}
+            </div>
           </Link>
         ) : (
           <div className="rounded-card border-border flex size-9 shrink-0 items-center justify-center overflow-hidden border bg-gray-100">

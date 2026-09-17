@@ -13,7 +13,10 @@ import type { ShortlistedStartup } from "@/types/shortlist";
  * startup's no longer published), plus a shortlist toggle so an
  * investor can un-shortlist directly from this page. That button is a
  * sibling of the Link rather than nested inside it - see
- * startup-result-card.tsx's comment on why.
+ * startup-result-card.tsx's comment on why - and sits in its own
+ * footer row below the Link's content rather than as an absolute
+ * corner overlay, so it's always anchored to the bottom of the card
+ * regardless of how much text is above it.
  */
 function ShortlistCard({
   startup,
@@ -27,10 +30,10 @@ function ShortlistCard({
   const funding = formatUsd(startup.fundingAmountSought);
 
   return (
-    <div className="relative">
+    <div className="rounded-card shadow-subtle hover:shadow-medium focus-within:ring-primary/30 flex flex-col overflow-hidden bg-white transition-shadow duration-200 focus-within:ring-2">
       <Link
         href={`/investor/discover?startup=${startup.id}`}
-        className="rounded-card shadow-subtle hover:shadow-medium focus-visible:ring-primary/30 flex flex-col gap-3 bg-white p-5 pr-14 outline-none transition-shadow duration-200 focus-visible:ring-2"
+        className="flex flex-1 flex-col gap-3 p-5 pb-4 outline-none"
       >
         <div className="flex items-center gap-3">
           <div className="rounded-card bg-primary-50 flex size-12 shrink-0 items-center justify-center overflow-hidden">
@@ -51,19 +54,20 @@ function ShortlistCard({
             </p>
           )}
         </div>
+      </Link>
 
+      <div className="border-border/60 flex items-center justify-between gap-3 border-t px-5 py-3">
         <p className="text-caption text-gray-500">
           Shortlisted {formatRelativeDate(startup.shortlistedAt)}
         </p>
-      </Link>
-      <ShortlistButton
-        startupId={startup.id}
-        initialShortlisted
-        onToggle={(startupId, shortlisted) => {
-          if (!shortlisted) onRemoved(startupId);
-        }}
-        className="absolute right-4 top-4"
-      />
+        <ShortlistButton
+          startupId={startup.id}
+          initialShortlisted
+          onToggle={(startupId, shortlisted) => {
+            if (!shortlisted) onRemoved(startupId);
+          }}
+        />
+      </div>
     </div>
   );
 }

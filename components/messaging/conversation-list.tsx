@@ -1,3 +1,6 @@
+"use client";
+
+import type { MouseEvent } from "react";
 import Link from "next/link";
 import { Building2 } from "lucide-react";
 
@@ -11,10 +14,21 @@ import type { ConversationSummary } from "@/types/message";
  * The conversation list pane - shared between Founder Messages and
  * Investor Messages, same "shared, differs only by which role's rows
  * land in it" reasoning as `components/notifications/notification-list.tsx`.
- * A plain server-rendered list of real `<Link>`s (`?conversation=<id>`,
- * same URL-driven-selection convention as Discover's `?startup=<id>`) -
- * switching conversations is a soft navigation, not client state, so
- * refresh/back/forward all keep working for free.
+ * Each row is a real `<Link>` (`?conversation=<id>`, same URL-driven-
+ * selection convention as Discover's `?startup=<id>`) - switching
+ * conversations is a soft navigation, not client state, so refresh/
+ * back/forward all keep working for free.
+ *
+ * `onSelect` rides on top of that Link, same click-guard pattern as
+ * `startup-result-card.tsx` (only takes over an ordinary left-click;
+ * modifier/middle clicks still open in a new tab natively) - it's what
+ * lets `MessagesWorkspace` mark this row selected and show the thread
+ * pane's loading skeleton the instant it's clicked, rather than the
+ * row doing nothing visible until the navigation resolves. See that
+ * component's top comment for why this needed adding (it didn't exist
+ * until now - unlike most of this app's other navigation, selecting a
+ * conversation lands on real server data that has to be fetched, not
+ * an already-rendered destination).
  *
  * Always shows the startup alongside the other participant - per the
  * brief's "CONVERSATION LIST" section ("Do not display only 'Jane Doe'
@@ -37,12 +51,18 @@ function ConversationList({
   role,
   activeConversationId,
   currentUserId,
+  onSelect,
 }: {
   conversations: ConversationSummary[];
   basePath: "/founder/messages" | "/investor/messages";
   role: "founder" | "investor";
+  /** The optimistically-selected id, from `MessagesWorkspace` - see that
+   * component's top comment. Highlighting follows this, not the
+   * server-confirmed selection, so a row lights up the instant it's
+   * clicked. */
   activeConversationId: string | null;
   currentUserId: string;
+  onSelect: (conversationId: string, href: string) => void;
 }) {
   return (
     <ul
@@ -56,6 +76,25 @@ function ConversationList({
         const initial =
           conversation.otherParticipant.fullName.trim().slice(0, 1).toUpperCase() ||
           "?";
+        const href = `${basePath}?conversation=${conversation.id}`;
+
+        function handleClick(event: MouseEvent<HTMLAnchorElement>) {
+          // Modifier/middle clicks mean "open in a new tab" - let the
+          // browser handle those natively rather than hijacking them
+          // for the optimistic selection.
+          if (
+            event.defaultPrevented ||
+            event.button !== 0 ||
+            event.metaKey ||
+            event.ctrlKey ||
+            event.shiftKey ||
+            event.altKey
+          ) {
+            return;
+          }
+          event.preventDefault();
+          onSelect(conversation.id, href);
+        }
 
         const rowContent = (
           <>
@@ -115,7 +154,9 @@ function ConversationList({
               // from the rest of the row (which opens the
               // conversation) - two nested `<a>`s aren't valid HTML, so
               // this can't just be one link wrapping everything the
-              // way the Investor-role row below still is.
+              // way the Investor-role row below still is. `onSelect`
+              // only ever applies to the conversation Link, never the
+              // avatar's profile link.
               <div
                 className={cn(
                   "flex items-start gap-3 p-4 transition-colors hover:bg-gray-50",
@@ -139,7 +180,8 @@ function ConversationList({
                 </Link>
 
                 <Link
-                  href={`${basePath}?conversation=${conversation.id}`}
+                  href={href}
+                  onClick={handleClick}
                   aria-current={isActive ? "page" : undefined}
                   className="flex min-w-0 flex-1 items-start gap-3 text-left outline-none"
                 >
@@ -148,7 +190,8 @@ function ConversationList({
               </div>
             ) : (
               <Link
-                href={`${basePath}?conversation=${conversation.id}`}
+                href={href}
+                onClick={handleClick}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "flex items-start gap-3 p-4 text-left transition-colors hover:bg-gray-50",
