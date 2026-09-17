@@ -55,6 +55,7 @@ function renderThread() {
       hasMoreMessages={false}
       currentUserId="founder-1"
       startupProfileHref={null}
+      onBack={() => {}}
     />,
   );
 }
