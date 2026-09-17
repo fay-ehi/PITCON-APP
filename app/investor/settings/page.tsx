@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { signOutAction } from "@/lib/auth/actions";
 import { SettingsPasswordForm } from "./settings-password-form";
+import { DeleteAccountSection } from "./delete-account-section";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -21,9 +22,10 @@ export const metadata: Metadata = {
 /**
  * Investor Account-management workspace - mirrors
  * app/founder/settings/page.tsx exactly (same "do not over-design it"
- * rationale, same two sections: Account + password change, and Account
- * actions/sign out). No Founder-account-creation or role-switching
- * controls here either, per the Sprint 5 brief.
+ * rationale, same three sections: Account + password change, Account
+ * actions/sign out, and a Danger zone for permanent account deletion).
+ * No Founder-account-creation or role-switching controls here either,
+ * per the Sprint 5 brief.
  */
 export default async function InvestorSettingsPage() {
   const current = await getCurrentUserProfile();
@@ -55,6 +57,15 @@ export default async function InvestorSettingsPage() {
                 Log out
               </Button>
             </form>
+          </CardContent>
+        </Card>
+
+        <Card className="border-destructive-50">
+          <CardHeader>
+            <CardTitle>Danger zone</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DeleteAccountSection />
           </CardContent>
         </Card>
       </div>

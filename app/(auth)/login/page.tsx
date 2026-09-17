@@ -21,9 +21,11 @@ export default async function LoginPage({
     next?: string;
     authError?: string;
     passwordUpdated?: string;
+    accountDeleted?: string;
   }>;
 }) {
-  const { next, authError, passwordUpdated } = await searchParams;
+  const { next, authError, passwordUpdated, accountDeleted } =
+    await searchParams;
 
   const current = await getCurrentUserProfile();
   if (current) redirect(roleHomePath(current.profile.role));
@@ -31,7 +33,9 @@ export default async function LoginPage({
   const errorMessage = authError ? AUTH_ERROR_MESSAGES[authError] : undefined;
   const noticeMessage = passwordUpdated
     ? "Password updated. Log in with your new password."
-    : undefined;
+    : accountDeleted
+      ? "Your account has been deleted."
+      : undefined;
 
   return (
     <LoginForm

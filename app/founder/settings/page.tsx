@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { signOutAction } from "@/lib/auth/actions";
 import { SettingsPasswordForm } from "./settings-password-form";
+import { DeleteAccountSection } from "./delete-account-section";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -20,11 +21,14 @@ export const metadata: Metadata = {
 
 /**
  * Account-management workspace - deliberately minimal, per the brief
- * ("do not over-design it"). Two sections:
+ * ("do not over-design it"). Three sections:
  *
  *  - Account: the signed-in email (read-only - changing it isn't part
  *    of this sprint) and the password-change control.
  *  - Account actions: sign out.
+ *  - Danger zone: permanent account deletion, kept in its own card so
+ *    it's never one accidental click away from the routine sign-out
+ *    action above it - see delete-account-section.tsx.
  *
  * No Investor-account-creation, role-switching, or team-management
  * controls exist here - explicitly out of scope per the brief - and no
@@ -63,6 +67,15 @@ export default async function FounderSettingsPage() {
                 Log out
               </Button>
             </form>
+          </CardContent>
+        </Card>
+
+        <Card className="border-destructive-50">
+          <CardHeader>
+            <CardTitle>Danger zone</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DeleteAccountSection />
           </CardContent>
         </Card>
       </div>

@@ -3,14 +3,13 @@ import {
   Building2,
   Check,
   Clock,
-  Compass,
   Heart,
   Plus,
-  Rocket,
   Search,
   Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import Image from "next/image";
 
 /**
  * Every visual `ProductTour` (product-tour.tsx) can show for a step,
@@ -80,8 +79,37 @@ function TourMedallion({ icon: Icon }: { icon: LucideIcon }) {
   );
 }
 
+/** The "Welcome to PITCON" step's visual - shared by both the founder
+ * and investor tours (same image, no role-specific variant). Originally
+ * an inline SVG medallion (orbit rings + a Rocket/Compass icon) here,
+ * swapped for a single custom illustration - same mechanism as
+ * `MyStartupsDecoration`'s SVG-to-PNG swap (see
+ * components/founder/my-startups-decoration.tsx's top comment).
+ *
+ * `ProductTour` (product-tour.tsx) already wraps every step's `visual`
+ * in a fixed-height, `relative`, `overflow-hidden` frame
+ * (`h-40 ... sm:h-48`), so this uses `fill` + `object-contain` rather
+ * than fixed `width`/`height` props - it scales to fit that frame
+ * however tall/wide the source PNG actually is, with no need to know
+ * its exact pixel dimensions up front.
+ *
+ * Drop the file at `public/images/onboarding/welcome.png`.
+ */
+function OnboardingWelcomeIllustration() {
+  return (
+    <Image
+      src="/images/onboarding/welcome.png"
+      alt=""
+      aria-hidden="true"
+      fill
+      sizes="(min-width: 640px) 32rem, 24rem"
+      className="object-contain p-4"
+    />
+  );
+}
+
 function FounderWelcomeIllustration() {
-  return <TourMedallion icon={Rocket} />;
+  return <OnboardingWelcomeIllustration />;
 }
 
 function FounderFinalIllustration() {
@@ -89,7 +117,7 @@ function FounderFinalIllustration() {
 }
 
 function InvestorWelcomeIllustration() {
-  return <TourMedallion icon={Compass} />;
+  return <OnboardingWelcomeIllustration />;
 }
 
 function InvestorFinalIllustration() {
