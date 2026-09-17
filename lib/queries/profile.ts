@@ -56,7 +56,7 @@ export async function getFounderProfileDetail(
       .single(),
     supabase
       .from("founder_profiles")
-      .select("job_title, country, bio, website_url")
+      .select("job_title, country, bio, website_url, verified")
       .eq("id", userId)
       .single(),
   ]);
@@ -70,6 +70,7 @@ export async function getFounderProfileDetail(
     country: founder.country,
     bio: founder.bio,
     websiteUrl: founder.website_url,
+    verified: founder.verified,
   };
 }
 
@@ -132,7 +133,7 @@ export async function getInvestorProfileDetail(
     supabase
       .from("investor_profiles")
       .select(
-        "organization, investor_type, country, bio, linkedin_url, funding_range_min, funding_range_max",
+        "organization, investor_type, country, bio, linkedin_url, funding_range_min, funding_range_max, verified",
       )
       .eq("id", userId)
       .single(),
@@ -160,5 +161,6 @@ export async function getInvestorProfileDetail(
       industryIdSet.has(industry.id),
     ),
     stages: allStages.filter((stage) => stageIdSet.has(stage.id)),
+    verified: investor.verified,
   };
 }

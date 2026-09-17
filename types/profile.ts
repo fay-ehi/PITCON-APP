@@ -35,6 +35,11 @@ export type FounderProfileDetail = {
   country: string | null;
   bio: string | null;
   websiteUrl: string | null;
+  /** Sprint 13 (Verified Badges) - surfaced here (not just on
+   * `StartupDetail`/`InterestInvestorSummary`) so both the self-view
+   * profile page and the public founder-profile view can show the
+   * same badge every other surface already does. */
+  verified: boolean;
 };
 
 /** The Investor profile fields shown on the profile view page and used
@@ -52,4 +57,7 @@ export type InvestorProfileDetail = {
   fundingRangeMax: number | null;
   industries: IndustryOption[];
   stages: StageOption[];
+  /** Sprint 13 (Verified Badges) - see the matching note on
+   * `FounderProfileDetail`. */
+  verified: boolean;
 };

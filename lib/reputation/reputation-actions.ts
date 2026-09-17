@@ -64,3 +64,25 @@ export async function getFounderEngagementSummaryAction(
 
   return getEngagementSummary(startup.founder_id, "founder");
 }
+
+/**
+ * Sprint 18 (Public Profile Pages) - a third call site for the same
+ * summary, with a third shape of "what's already available": the new
+ * `/investor/founders/[founderId]` page is keyed directly by the
+ * founder's own id (unlike `discover-preview-dialog.tsx`, which only
+ * ever has a `startupId` - see this file's own top comment on why that
+ * one resolves through `startups` instead). No lookup needed here, just
+ * the same auth check before handing back the summary.
+ */
+export async function getFounderEngagementSummaryByIdAction(
+  founderId: string,
+): Promise<EngagementSummary | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  return getEngagementSummary(founderId, "founder");
+}

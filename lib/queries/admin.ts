@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { InterestStatus } from "@/types/interest";
-import type { UserRole } from "@/types/profile";
+import type { IndustryOption, InvestorType, StageOption, UserRole } from "@/types/profile";
 import type { AdminReportSummary, ReportStatus } from "@/types/report";
 import type { ActivationFunnel } from "@/types/funnel";
 /**
@@ -401,5 +401,157 @@ export async function getActivationFunnel(): Promise<ActivationFunnel> {
       firstInterest: investorExpressedInterest.size,
       firstMessage: investorSentMessage.size,
     },
+  };
+}
+
+/**
+ * Sprint 18 (Public Profile Pages) - backs `/admin/users/[userId]`, so
+ * an operator can look at a full profile (not just name/role/date)
+ * before deciding whether to verify someone. Deliberately its own
+ * admin-client query rather than a call into `getFounderProfileDetail`/
+ * `getInvestorProfileDetail` (lib/queries/profile.ts) - those read
+ * through the caller's own RLS session, which is exactly wrong here:
+ * the whole point of this page is letting an operator open *any*
+ * user's profile, including one neither role's own RLS policies would
+ * ever grant them (an investor with no published startup yet, or one
+ * no founder has expressed interest in) - the same "admin needs
+ * cross-user visibility RLS can't give a real session" reasoning this
+ * file's own top comment already lays out for every other function
+ * here.
+ *
+ * Returns one merged shape for either role rather than a union type -
+ * simpler for the one read-only detail page that renders it, which
+ * already knows to show the founder fields or the investor fields
+ * based on `role`. `null` means no `profiles` row for this id at all;
+ * an admin poking a stale/mistyped id gets the same "not found" the
+ * page turns into a 404.
+ */
+export type AdminUserProfileDetail = {
+  id: string;
+  fullName: string;
+  avatarUrl: string | null;
+  role: UserRole;
+  verified: boolean;
+  createdAt: string;
+  country: string | null;
+  bio: string | null;
+  /** Founder only. */
+  jobTitle: string | null;
+  websiteUrl: string | null;
+  /** Investor only. */
+  organization: string | null;
+  investorType: InvestorType | null;
+  linkedinUrl: string | null;
+  fundingRangeMin: number | null;
+  fundingRangeMax: number | null;
+  industries: IndustryOption[];
+  stages: StageOption[];
+};
+
+export async function getAdminUserProfileDetail(
+  userId: string,
+): Promise<AdminUserProfileDetail | null> {
+  const admin = createAdminClient();
+
+  const { data: profile, error: profileError } = await admin
+    .from("profiles")
+    .select("id, full_name, avatar_url, role, created_at")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (profileError) {
+    throw new Error(`Failed to load user: ${profileError.message}`);
+  }
+  if (!profile) return null;
+
+  const base = {
+    id: profile.id,
+    fullName: profile.full_name ?? "Unnamed",
+    avatarUrl: profile.avatar_url,
+    role: profile.role,
+    createdAt: profile.created_at,
+  };
+
+  if (profile.role === "founder") {
+    const { data: founder, error: founderError } = await admin
+      .from("founder_profiles")
+      .select("job_title, country, bio, website_url, verified")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (founderError) {
+      throw new Error(`Failed to load founder profile: ${founderError.message}`);
+    }
+
+    return {
+      ...base,
+      verified: founder?.verified ?? false,
+      jobTitle: founder?.job_title ?? null,
+      websiteUrl: founder?.website_url ?? null,
+      country: founder?.country ?? null,
+      bio: founder?.bio ?? null,
+      organization: null,
+      investorType: null,
+      linkedinUrl: null,
+      fundingRangeMin: null,
+      fundingRangeMax: null,
+      industries: [],
+      stages: [],
+    };
+  }
+
+  const [
+    { data: investor, error: investorError },
+    { data: industryRows, error: industryError },
+    { data: stageRows, error: stageError },
+    { data: allIndustries, error: allIndustriesError },
+    { data: allStages, error: allStagesError },
+  ] = await Promise.all([
+    admin
+      .from("investor_profiles")
+      .select(
+        "organization, investor_type, country, bio, linkedin_url, funding_range_min, funding_range_max, verified",
+      )
+      .eq("id", userId)
+      .maybeSingle(),
+    admin.from("investor_industry_preferences").select("industry_id").eq("investor_id", userId),
+    admin.from("investor_stage_preferences").select("stage_id").eq("investor_id", userId),
+    admin.from("industries").select("id, name, slug").order("sort_order", { ascending: true }),
+    admin.from("startup_stages").select("id, name, slug").order("sort_order", { ascending: true }),
+  ]);
+
+  if (investorError) {
+    throw new Error(`Failed to load investor profile: ${investorError.message}`);
+  }
+  if (industryError) {
+    throw new Error(`Failed to load industry preferences: ${industryError.message}`);
+  }
+  if (stageError) {
+    throw new Error(`Failed to load stage preferences: ${stageError.message}`);
+  }
+  if (allIndustriesError) {
+    throw new Error(`Failed to load industries: ${allIndustriesError.message}`);
+  }
+  if (allStagesError) {
+    throw new Error(`Failed to load stages: ${allStagesError.message}`);
+  }
+
+  const industryIdSet = new Set((industryRows ?? []).map((row) => row.industry_id));
+  const stageIdSet = new Set((stageRows ?? []).map((row) => row.stage_id));
+
+  return {
+    ...base,
+    verified: investor?.verified ?? false,
+    jobTitle: null,
+    websiteUrl: null,
+    country: investor?.country ?? null,
+    bio: investor?.bio ?? null,
+    organization: investor?.organization ?? null,
+    investorType: investor?.investor_type ?? null,
+    linkedinUrl: investor?.linkedin_url ?? null,
+    fundingRangeMin: investor?.funding_range_min ?? null,
+    fundingRangeMax: investor?.funding_range_max ?? null,
+    industries: (allIndustries ?? []).filter((industry) => industryIdSet.has(industry.id)),
+    stages: (allStages ?? []).filter((stage) => stageIdSet.has(stage.id)),
   };
 }

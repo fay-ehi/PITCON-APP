@@ -1,35 +1,47 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { Briefcase, Globe, MapPin, Rocket } from "lucide-react";
+import { notFound } from "next/navigation";
+import { Briefcase, Globe, MapPin } from "lucide-react";
 
-import { getCurrentUserProfile } from "@/lib/auth/session";
 import { getFounderProfileDetail } from "@/lib/queries/profile";
-import { calculateFounderProfileCompletion } from "@/lib/profile/completion";
+import { getFounderEngagementSummaryByIdAction } from "@/lib/reputation/reputation-actions";
 import { Container } from "@/components/shared/container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { ProfileField } from "@/components/profile/profile-field";
+import { EngagementStatsLoader } from "@/components/shared/engagement-stats-loader";
+import { ReportButton } from "@/components/shared/report-button";
 
 export const metadata: Metadata = {
-  title: "Your Profile",
+  title: "Founder Profile",
 };
 
-export default async function FounderProfilePage() {
-  const current = await getCurrentUserProfile();
-  if (!current) redirect("/login?next=/founder/profile");
+/**
+ * The investor-facing twin of `app/investor/founders/[founderId]/page.tsx`'s
+ * sibling, `/founder/investors/[investorId]` - same reasoning, mirrored:
+ * `getFounderProfileDetail` is the exact function the Founder's own
+ * self-view page already calls, just now with someone else's id. RLS
+ * (Sprint 13's "Investors can read founder profiles for published
+ * startups") is what actually decides whether a given investor can see a
+ * given founder - a founder with no published startup simply isn't
+ * visible here, same `null` -> `notFound()` treatment as the investor
+ * side, so a random id can't be used to confirm whether an account
+ * exists.
+ *
+ * Not linked from anywhere yet - see the end-of-task note on why the
+ * Founder section of Discover's preview dialog doesn't show a founder
+ * avatar/name today (a deliberate `StartupDetail` design choice, not an
+ * oversight), and the admin verification queue, which links here
+ * directly instead.
+ */
+export default async function FounderPublicProfilePage({
+  params,
+}: {
+  params: Promise<{ founderId: string }>;
+}) {
+  const { founderId } = await params;
 
-  const profile = await getFounderProfileDetail(current.userId);
-  if (!profile) redirect("/founder/startups");
-
-  const completion = calculateFounderProfileCompletion({
-    avatarUrl: profile.avatarUrl,
-    jobTitle: profile.jobTitle,
-    country: profile.country,
-    bio: profile.bio,
-    websiteUrl: profile.websiteUrl,
-  });
+  const profile = await getFounderProfileDetail(founderId);
+  if (!profile) notFound();
 
   return (
     <Container className="max-w-4xl py-10 sm:py-12">
@@ -38,8 +50,7 @@ export default async function FounderProfilePage() {
         avatarUrl={profile.avatarUrl}
         subtitle={profile.jobTitle}
         roleLabel="Founder"
-        editHref="/founder/profile/edit"
-        completion={completion}
+        editHref={null}
         verified={profile.verified}
       />
 
@@ -70,25 +81,6 @@ export default async function FounderProfilePage() {
               />
             </CardContent>
           </Card>
-
-          <Card className="relative overflow-hidden">
-            <div aria-hidden className="bg-accent-amber absolute top-0 left-0 h-1.5 w-full" />
-            <CardContent className="flex flex-col items-start gap-3 pt-1">
-              <span className="bg-accent-amber-soft flex size-11 items-center justify-center rounded-full">
-                <Rocket className="text-accent-amber-soft-fg size-5" aria-hidden />
-              </span>
-              <div>
-                <p className="text-body font-semibold text-gray-900">Your startup</p>
-                <p className="text-small mt-0.5 text-gray-500">
-                  This page is your personal identity, separate from the business
-                  you&apos;re building.
-                </p>
-              </div>
-              <Button asChild variant="secondary" size="sm">
-                <Link href="/founder/startups">Go to My Startups</Link>
-              </Button>
-            </CardContent>
-          </Card>
         </div>
 
         <div className="flex flex-col gap-6 lg:col-span-2">
@@ -98,6 +90,21 @@ export default async function FounderProfilePage() {
             </CardHeader>
             <CardContent>
               <ProfileField label="Bio" value={profile.bio} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="flex flex-col gap-3">
+              <EngagementStatsLoader
+                key={founderId}
+                action={getFounderEngagementSummaryByIdAction}
+                id={founderId}
+              />
+              <ReportButton
+                label="Report this founder"
+                reportedUserId={founderId}
+                className="w-fit"
+              />
             </CardContent>
           </Card>
         </div>

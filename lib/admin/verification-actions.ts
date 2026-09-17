@@ -45,5 +45,6 @@ export async function setVerifiedAction(
   }
 
   revalidatePath("/admin/users");
+  revalidatePath(`/admin/users/${userId}`);
   return { success: true };
 }

@@ -265,7 +265,8 @@ function PreviewContent({
         <SectionHeading>Founder</SectionHeading>
         <EngagementStatsLoader
           key={startup.id}
-          fetcher={() => getFounderEngagementSummaryAction(startup.id)}
+          action={getFounderEngagementSummaryAction}
+          id={startup.id}
         />
         <ReportButton label="Report this startup" startupId={startup.id} className="w-fit" />
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { toast } from "sonner";
@@ -79,10 +80,16 @@ function InterestDetailDialog({
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
-              <Avatar className="size-10">
-                <AvatarImage src={interest.investor.avatarUrl ?? undefined} alt="" />
-                <AvatarFallback>{initial}</AvatarFallback>
-              </Avatar>
+              <Link
+                href={`/founder/investors/${interest.investor.id}`}
+                aria-label={`View ${interest.investor.fullName}'s profile`}
+                className="rounded-pill shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+              >
+                <Avatar className="size-10">
+                  <AvatarImage src={interest.investor.avatarUrl ?? undefined} alt="" />
+                  <AvatarFallback>{initial}</AvatarFallback>
+                </Avatar>
+              </Link>
               {interest.investor.fullName}
               <VerifiedBadge verified={interest.investor.verified} />
             </DialogTitle>
@@ -127,13 +134,22 @@ function InterestDetailDialog({
           <div className="border-t border-border pt-4">
             <EngagementStatsLoader
               key={interest.investor.id}
-              fetcher={() => getInvestorEngagementSummaryAction(interest.investor.id)}
+              action={getInvestorEngagementSummaryAction}
+              id={interest.investor.id}
             />
-            <ReportButton
-              label="Report this investor"
-              reportedUserId={interest.investor.id}
-              className="mt-3"
-            />
+            <div className="mt-3 flex items-center gap-4">
+              <Link
+                href={`/founder/investors/${interest.investor.id}`}
+                className="text-caption text-primary inline-flex items-center gap-1 hover:underline"
+              >
+                View full profile
+                <ExternalLink className="size-3" aria-hidden />
+              </Link>
+              <ReportButton
+                label="Report this investor"
+                reportedUserId={interest.investor.id}
+              />
+            </div>
           </div>
 
           <DialogFooter>

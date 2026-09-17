@@ -26,10 +26,12 @@ import type { EngagementSummary } from "@/types/reputation";
  * clicks through cards; it's a no-op for My Interests, where each
  * dialog instance only ever shows one fixed investor.
  */
-function EngagementStatsLoader({
-  fetcher,
+function EngagementStatsLoader<TId>({
+  action,
+  id,
 }: {
-  fetcher: () => Promise<EngagementSummary | null>;
+  action: (id: TId) => Promise<EngagementSummary | null>;
+  id: TId;
 }) {
   const [summary, setSummary] = useState<EngagementSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +39,7 @@ function EngagementStatsLoader({
   useEffect(() => {
     let cancelled = false;
 
-    fetcher().then((result) => {
+    action(id).then((result) => {
       if (cancelled) return;
       setSummary(result);
       setLoading(false);

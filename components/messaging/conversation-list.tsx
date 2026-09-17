@@ -57,34 +57,106 @@ function ConversationList({
           conversation.otherParticipant.fullName.trim().slice(0, 1).toUpperCase() ||
           "?";
 
+        const rowContent = (
+          <>
+            <div className="min-w-0 flex-1">
+              <p
+                className={cn(
+                  "text-small flex items-center gap-1 text-gray-900",
+                  conversation.isUnread ? "font-semibold" : "font-medium",
+                )}
+              >
+                <span className="truncate">
+                  {role === "founder"
+                    ? conversation.otherParticipant.fullName
+                    : conversation.startup.name || "Untitled startup"}
+                </span>
+                <VerifiedBadge verified={conversation.otherParticipant.verified} />
+              </p>
+              {conversation.lastMessagePreview && (
+                <p
+                  className={cn(
+                    "text-caption mt-0.5 truncate",
+                    conversation.isUnread
+                      ? "font-medium text-gray-700"
+                      : "text-gray-400",
+                  )}
+                >
+                  {isOwnLastMessage && "You: "}
+                  {conversation.lastMessagePreview}
+                </p>
+              )}
+            </div>
+
+            {conversation.lastMessageAt && (
+              <span className="text-caption shrink-0 text-gray-400">
+                {formatShortRelativeTime(conversation.lastMessageAt)}
+              </span>
+            )}
+          </>
+        );
+
+        const unreadDot = (
+          <div className="mt-2 flex size-2 shrink-0 items-center justify-center">
+            {conversation.isUnread && (
+              <span
+                aria-label="Unread"
+                className="rounded-pill bg-primary size-2 shrink-0"
+              />
+            )}
+          </div>
+        );
+
         return (
           <li key={conversation.id}>
-            <Link
-              href={`${basePath}?conversation=${conversation.id}`}
-              aria-current={isActive ? "page" : undefined}
-              className={cn(
-                "flex items-start gap-3 p-4 text-left transition-colors hover:bg-gray-50",
-                isActive && "bg-primary-50",
-              )}
-            >
-              <div className="mt-2 flex size-2 shrink-0 items-center justify-center">
-                {conversation.isUnread && (
-                  <span
-                    aria-label="Unread"
-                    className="rounded-pill bg-primary size-2 shrink-0"
-                  />
+            {role === "founder" ? (
+              // The Investor's avatar is its own link to their public
+              // profile (`/founder/investors/[investorId]`), separate
+              // from the rest of the row (which opens the
+              // conversation) - two nested `<a>`s aren't valid HTML, so
+              // this can't just be one link wrapping everything the
+              // way the Investor-role row below still is.
+              <div
+                className={cn(
+                  "flex items-start gap-3 p-4 transition-colors hover:bg-gray-50",
+                  isActive && "bg-primary-50",
                 )}
-              </div>
+              >
+                {unreadDot}
 
-              {role === "founder" ? (
-                <Avatar className="size-10 shrink-0">
-                  <AvatarImage
-                    src={conversation.otherParticipant.avatarUrl ?? undefined}
-                    alt=""
-                  />
-                  <AvatarFallback>{initial}</AvatarFallback>
-                </Avatar>
-              ) : (
+                <Link
+                  href={`/founder/investors/${conversation.otherParticipant.id}`}
+                  aria-label={`View ${conversation.otherParticipant.fullName}'s profile`}
+                  className="rounded-pill shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                >
+                  <Avatar className="size-10 shrink-0">
+                    <AvatarImage
+                      src={conversation.otherParticipant.avatarUrl ?? undefined}
+                      alt=""
+                    />
+                    <AvatarFallback>{initial}</AvatarFallback>
+                  </Avatar>
+                </Link>
+
+                <Link
+                  href={`${basePath}?conversation=${conversation.id}`}
+                  aria-current={isActive ? "page" : undefined}
+                  className="flex min-w-0 flex-1 items-start gap-3 text-left outline-none"
+                >
+                  {rowContent}
+                </Link>
+              </div>
+            ) : (
+              <Link
+                href={`${basePath}?conversation=${conversation.id}`}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "flex items-start gap-3 p-4 text-left transition-colors hover:bg-gray-50",
+                  isActive && "bg-primary-50",
+                )}
+              >
+                {unreadDot}
+
                 <div className="rounded-card bg-primary-50 flex size-10 shrink-0 items-center justify-center overflow-hidden">
                   {conversation.startup.logoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -97,43 +169,10 @@ function ConversationList({
                     <Building2 className="text-primary size-4" aria-hidden />
                   )}
                 </div>
-              )}
 
-              <div className="min-w-0 flex-1">
-                <p
-                  className={cn(
-                    "text-small flex items-center gap-1 text-gray-900",
-                    conversation.isUnread ? "font-semibold" : "font-medium",
-                  )}
-                >
-                  <span className="truncate">
-                    {role === "founder"
-                      ? conversation.otherParticipant.fullName
-                      : conversation.startup.name || "Untitled startup"}
-                  </span>
-                  <VerifiedBadge verified={conversation.otherParticipant.verified} />
-                </p>
-                {conversation.lastMessagePreview && (
-                  <p
-                    className={cn(
-                      "text-caption mt-0.5 truncate",
-                      conversation.isUnread
-                        ? "font-medium text-gray-700"
-                        : "text-gray-400",
-                    )}
-                  >
-                    {isOwnLastMessage && "You: "}
-                    {conversation.lastMessagePreview}
-                  </p>
-                )}
-              </div>
-
-              {conversation.lastMessageAt && (
-                <span className="text-caption shrink-0 text-gray-400">
-                  {formatShortRelativeTime(conversation.lastMessageAt)}
-                </span>
-              )}
-            </Link>
+                {rowContent}
+              </Link>
+            )}
           </li>
         );
       })}

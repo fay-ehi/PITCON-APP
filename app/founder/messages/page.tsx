@@ -49,32 +49,34 @@ export default async function MessagesPage({
   ]);
 
   return (
-    // `h-[calc(100svh-4rem)]` (4rem = the topbar's `h-16`, the only
-    // fixed chrome above this) plus `flex flex-col` bounds this whole
-    // page to exactly what's left of the viewport, instead of letting
-    // it grow with content and rely on the page scrolling. `Messages
-    // Workspace` fills whatever's left after the heading via its own
-    // `flex-1 min-h-0` - see that component for why a *fixed* pane
-    // height wasn't enough on its own (a tall enough page around it
-    // still pushed the composer below the fold).
-    <Container className="flex h-[calc(100svh-4rem)] flex-col py-10 sm:py-12">
-      <h1 className="text-h2 shrink-0 text-gray-900">Messages</h1>
-      <p className="text-small mt-1 shrink-0 text-gray-500">
-        Conversations with investors interested in your startups.
-      </p>
+    // `fixed`, not `h-[calc(100svh-4rem)]` in normal flow - see
+    // app/investor/messages/page.tsx for the full reasoning (this page
+    // used to have the same comment that page had). `left-16 lg:left-60`
+    // mirrors FounderSidebar's own `w-16 lg:w-60`
+    // (components/founder/sidebar.tsx) - the sidebar is that same single
+    // element at every width, just narrower below `lg`, so there's no
+    // separate mobile case to account for here either. `top-16` matches
+    // FounderTopBar's own `h-16` (components/founder/topbar.tsx).
+    <div className="fixed top-16 right-0 bottom-0 left-16 overflow-hidden bg-gray-50 lg:left-60">
+      <Container className="flex h-full flex-col py-6">
+        <h1 className="text-h2 shrink-0 text-gray-900">Messages</h1>
+        <p className="text-small mt-1 shrink-0 text-gray-500">
+          Conversations with investors interested in your startups.
+        </p>
 
-      <MessagesWorkspace
-        role="founder"
-        basePath="/founder/messages"
-        conversations={conversations}
-        activeConversationId={
-          activeConversation ? requestedConversationId : null
-        }
-        activeConversation={activeConversation}
-        initialMessages={messagesPage.messages}
-        hasMoreMessages={messagesPage.hasMore}
-        currentUserId={current.userId}
-      />
-    </Container>
+        <MessagesWorkspace
+          role="founder"
+          basePath="/founder/messages"
+          conversations={conversations}
+          activeConversationId={
+            activeConversation ? requestedConversationId : null
+          }
+          activeConversation={activeConversation}
+          initialMessages={messagesPage.messages}
+          hasMoreMessages={messagesPage.hasMore}
+          currentUserId={current.userId}
+        />
+      </Container>
+    </div>
   );
 }

@@ -16,7 +16,7 @@ import type {
  * is shared: same tables, same layout, differs only in which role's rows
  * land in it and where a couple of role-specific links point.
  *
- * "DESKTOP DESIGN"/"MOBILE DESIGN": one grid handles both. Desktop
+ * "DESKTOP DESIGN"/"MOBILE DESIGN": one layout handles both. Desktop
  * (`md:` and up) always shows both panes side by side. Below `md`, only
  * one pane is visible at a time - the list pane hides once a conversation
  * is selected, the thread pane hides until one is - driven entirely by
@@ -65,35 +65,40 @@ function MessagesWorkspace({
 
   // `flex-1 min-h-0`, not a fixed height: the page (see
   // app/founder/messages/page.tsx and app/investor/messages/page.tsx)
-  // already bounds itself to the viewport and hands this component
-  // whatever's left after the heading, via a `flex flex-col` ancestor.
-  // A fixed height here (what this used to be) only bounds the pane's
-  // *own* scrolling - it does nothing to stop the page around it from
-  // growing taller than the viewport and pushing the whole pane, composer
-  // included, below the fold. `min-h-0` is required alongside `flex-1`
-  // because a flex item's default `min-height: auto` would otherwise let
-  // its content (a whole conversation's worth of messages) demand more
-  // height than the flex parent actually has, defeating the point.
-  // `min-h-[26rem]` keeps this usable on very short viewports instead of
-  // collapsing toward zero.
+  // pins itself directly to the viewport with `position: fixed` and
+  // hands this component whatever's left after the heading, via a
+  // `flex flex-col` ancestor with a genuinely definite height. `min-h-0`
+  // is required alongside `flex-1` because a flex item's default
+  // `min-height: auto` would otherwise let this component's content (a
+  // whole conversation's worth of messages) demand more height than the
+  // flex parent actually has, defeating the point - same reasoning
+  // extends to every pane below.
   //
-  // The same `min-height: auto` problem exists one level down, on each
-  // grid cell below (`grid-cols-1 md:grid-cols-[300px_1fr]`): a grid
-  // item defaults to sizing itself to fit its content too, same as a
-  // flex item. Each cell already had `min-w-0` to stop a long
-  // unbreakable string from blowing out the *column* width, but was
-  // missing the equivalent `min-h-0` for the *row* - so
-  // ConversationList's/ConversationThread's own internal
-  // `overflow-y-auto` panes never actually got to enforce a bounded
-  // height. Without it, the cell (and the composer inside it) simply
-  // render past this container's height instead of scrolling inside it,
-  // which is what pushed the whole page down regardless of how many
-  // messages were in the thread.
+  // Deliberately no `min-h-[…]` floor on the box below (there used to be
+  // one, `min-h-[26rem]`, meant to keep this usable on very short
+  // viewports) - once the parent chain above has a genuinely fixed,
+  // viewport-derived height, an explicit minimum on this box can only
+  // ever cause harm: `flex-1` already gives it 100% of whatever's left
+  // after the heading, which is never negative, so nothing here can
+  // overflow the parent on its own. A `min-h` floor breaks exactly that
+  // guarantee the moment the heading is taller than expected, or the
+  // viewport shorter than the floor - both of which were, at one point
+  // each, the actual reason the composer went missing entirely instead
+  // of merely needing a scroll.
+  //
+  // Flexbox, not CSS Grid, for the two panes below: a `grid
+  // grid-cols-1 md:grid-cols-[300px_1fr]` (what this used to be) sizes
+  // its single implicit row from each item's own natural, unclipped
+  // content height - a whole message history - before `min-h-0` on the
+  // item gets a say. A flex row's cross-axis `stretch` (the default)
+  // works the other way: each pane is sized to match *this* container's
+  // already-known height first, and only then does `min-h-0` on the pane
+  // stop its own content from re-expanding past that.
   return (
-    <div className="rounded-card border-border mt-8 grid min-h-[26rem] flex-1 grid-cols-1 overflow-hidden border bg-white md:grid-cols-[300px_1fr]">
+    <div className="rounded-card border-border mt-4 flex flex-1 flex-col overflow-hidden border bg-white md:flex-row">
       <div
         className={cn(
-          "border-border flex min-h-0 flex-col md:border-r",
+          "border-border flex min-h-0 flex-col md:w-[300px] md:shrink-0 md:border-r",
           hasSelection && "hidden md:flex",
         )}
       >
@@ -108,7 +113,7 @@ function MessagesWorkspace({
 
       <div
         className={cn(
-          "flex min-h-0 min-w-0 flex-col",
+          "flex min-h-0 min-w-0 flex-1 flex-col",
           !hasSelection && "hidden md:flex",
         )}
       >

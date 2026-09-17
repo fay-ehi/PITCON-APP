@@ -226,18 +226,24 @@ function ConversationThread({
         </Link>
 
         {role === "founder" ? (
-          <Avatar className="size-9 shrink-0">
-            <AvatarImage
-              src={conversation.otherParticipant.avatarUrl ?? undefined}
-              alt=""
-            />
-            <AvatarFallback>
-              {conversation.otherParticipant.fullName
-                .trim()
-                .slice(0, 1)
-                .toUpperCase() || "?"}
-            </AvatarFallback>
-          </Avatar>
+          <Link
+            href={`/founder/investors/${conversation.otherParticipant.id}`}
+            aria-label={`View ${conversation.otherParticipant.fullName}'s profile`}
+            className="rounded-pill shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+          >
+            <Avatar className="size-9 shrink-0">
+              <AvatarImage
+                src={conversation.otherParticipant.avatarUrl ?? undefined}
+                alt=""
+              />
+              <AvatarFallback>
+                {conversation.otherParticipant.fullName
+                  .trim()
+                  .slice(0, 1)
+                  .toUpperCase() || "?"}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
         ) : (
           <div className="rounded-card border-border flex size-9 shrink-0 items-center justify-center overflow-hidden border bg-gray-100">
             {conversation.startup.logoUrl ? (
@@ -275,6 +281,16 @@ function ConversationThread({
             className="text-caption text-primary hidden shrink-0 items-center gap-1 hover:underline sm:flex"
           >
             View startup
+            <ExternalLink className="size-3" aria-hidden />
+          </Link>
+        )}
+
+        {role === "founder" && (
+          <Link
+            href={`/founder/investors/${conversation.otherParticipant.id}`}
+            className="text-caption text-primary hidden shrink-0 items-center gap-1 hover:underline sm:flex"
+          >
+            View profile
             <ExternalLink className="size-3" aria-hidden />
           </Link>
         )}

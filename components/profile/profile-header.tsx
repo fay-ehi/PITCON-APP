@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { VerifiedBadge } from "@/components/shared/verified-badge";
 
 function initialsFor(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -26,15 +27,26 @@ function ProfileHeader({
   roleLabel,
   editHref,
   completion,
+  verified = false,
 }: {
   name: string;
   avatarUrl: string | null;
   subtitle: string | null;
   /** "Founder" or "Investor" - shown as a small pill above the name. */
   roleLabel: string;
-  editHref: string;
-  /** 0-100. The completion pill hides itself once a profile is fully filled in. */
-  completion: number;
+  /** Where the "Edit profile" button goes. `null` on a public
+   * profile view (someone else's, or an admin's read-only look) -
+   * hides the button entirely rather than pointing it at a route the
+   * viewer has no business landing on. */
+  editHref: string | null;
+  /** 0-100. The completion pill hides itself once a profile is fully
+   * filled in. Omit entirely on a public profile view - completion is
+   * a self-nudge metric, not something worth showing about someone
+   * else. */
+  completion?: number;
+  /** Sprint 13 (Verified Badges) - shown next to the name, same badge
+   * every other surface (Messages, Interests, admin) already uses. */
+  verified?: boolean;
 }) {
   return (
     <div
@@ -53,24 +65,29 @@ function ProfileHeader({
             <span className="mb-1.5 inline-flex items-center rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-semibold text-white">
               {roleLabel}
             </span>
-            <h1 className="text-h2 font-bold text-white">{name}</h1>
+            <h1 className="text-h2 flex items-center gap-1.5 font-bold text-white">
+              {name}
+              <VerifiedBadge verified={verified} className="fill-white text-primary-700" />
+            </h1>
             {subtitle && <p className="text-small text-white/80">{subtitle}</p>}
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          {completion < 100 && (
+          {completion !== undefined && completion < 100 && (
             <span className="hidden items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold text-white sm:inline-flex">
               {completion}% complete
             </span>
           )}
-          <Button
-            asChild
-            size="sm"
-            className="border-0 bg-white text-primary-700 hover:bg-white/90"
-          >
-            <Link href={editHref}>Edit profile</Link>
-          </Button>
+          {editHref && (
+            <Button
+              asChild
+              size="sm"
+              className="border-0 bg-white text-primary-700 hover:bg-white/90"
+            >
+              <Link href={editHref}>Edit profile</Link>
+            </Button>
+          )}
         </div>
       </div>
     </div>

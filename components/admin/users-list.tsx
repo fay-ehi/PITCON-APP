@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 
 import { Card } from "@/components/ui/card";
@@ -67,10 +68,13 @@ function UserRow({
 
   return (
     <div className="flex items-center justify-between gap-4 rounded-card bg-white p-4 shadow-subtle">
-      <div className="flex min-w-0 items-center gap-2">
+      <Link
+        href={`/admin/users/${user.id}`}
+        className="flex min-w-0 items-center gap-2 outline-none hover:underline focus-visible:ring-primary/30 focus-visible:ring-2"
+      >
         <p className="truncate text-small font-medium text-gray-900">{user.fullName}</p>
         <VerifiedBadge verified={user.verified} />
-      </div>
+      </Link>
       <div className="flex shrink-0 items-center gap-3">
         <p className="text-caption text-gray-500">{formatRelativeDate(user.createdAt)}</p>
         <Badge variant={user.role === "founder" ? "primary" : "secondary"}>
