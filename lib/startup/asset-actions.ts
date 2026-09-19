@@ -84,6 +84,11 @@ async function uploadAsset(
     .upload(path, file, { contentType: file.type, upsert: false });
 
   if (uploadError) {
+    // Surfaced only as a generic message below (don't leak storage
+    // internals to the UI), but logged here so the *real* Supabase
+    // reason (e.g. "The object exceeded the maximum allowed size") is
+    // visible in the terminal instead of silently disappearing.
+    console.error(`[uploadAsset:${kind}]`, uploadError);
     return {
       success: false,
       error: "Couldn't upload that image. Please try again.",

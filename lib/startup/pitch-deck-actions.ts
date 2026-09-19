@@ -88,6 +88,10 @@ export async function uploadPitchDeckAction(
     .upload(path, file, { contentType: "application/pdf", upsert: false });
 
   if (uploadError) {
+    // Logged so the real Supabase Storage reason (e.g. bucket
+    // file_size_limit exceeded) shows up in the terminal instead of
+    // only the generic message the UI gets below.
+    console.error("[uploadPitchDeckAction]", uploadError);
     return {
       success: false,
       error: "Couldn't upload that file. Please try again.",
